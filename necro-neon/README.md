@@ -15,7 +15,7 @@ Pensado para: páginas de videojuegos, portfolios oscuros, proyectos ARG, arte w
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/necro-neon.git
+git clone https://github.com/MitsukiNai/necro-neon.git
 
 # Instalar dependencias
 npm install
