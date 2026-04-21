@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ja" data-district="tokyo-night">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NECRO-NEON // 呪われた都市 // Framework v3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400;700;900&family=Noto+Serif+JP:wght@300;400;700;900&family=Share+Tech+Mono&family=Cinzel+Decorative:wght@400;700;900&family=Orbitron:wght@400;600;700;900&family=Zen+Kurenaido&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP...">
+<link rel="stylesheet" href="necro-neon/necro-neon.css">
+<script type="module" src="necro-neon/dist/index.js"></script>
+</head>
+<body data-district="tokyo-night" class="fog-vignette">
+
+<!-- SVG filters -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <filter id="glow-f"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+</svg>
+
+<!-- Fixed atmospheric canvases -->
+<canvas id="rain-canvas"></canvas>
+<canvas id="infestation-canvas"></canvas>
+<div class="city-bg"></div>
+
+<!-- Toast stack -->
+<div class="nn-toast-stack" id="toast-stack"></div>
+
+<!-- ═══════════════════════════════════════════════
+     MODAL — Breach Alert
+     ═══════════════════════════════════════════════ -->
+<div class="nn-modal-overlay" id="modal-breach">
+  <div class="nn-modal scanlines digital-noise">
+    <div class="nn-modal-header">
+      <span class="nn-label glitch-text" style="color:var(--nn-neon-danger)">⚠ CONTAINMENT BREACH</span>
+      <button class="nn-modal-close" onclick="closeModal('modal-breach')">✕</button>
+    </div>
+    <div class="nn-modal-body">
+      <div class="glitch nn-display mb-3" data-text="SECTOR FAILURE" style="font-size:1.2rem;color:var(--nn-neon-danger);text-shadow:var(--nn-glow-danger)">SECTOR FAILURE</div>
+      <p class="nn-small mb-3" style="color:var(--nn-text-dim)">Sector 9 containment has failed. Entity classification unknown. All personnel evacuate the affected district immediately.</p>
+      <div class="warning-banner banner-danger mb-2"><span class="banner-icon">☠</span><span>Estimated full infestation: 00:04:22</span></div>
+      <div class="warning-banner banner-warn"><span class="banner-icon">⚠</span><span>Evacuation routes: Sector 1 and Sector 3 only</span></div>
+    </div>
+    <div class="nn-modal-footer">
+      <button class="nn-btn ghost-button nn-btn-sm" onclick="closeModal('modal-breach')">Ignore</button>
+      <button class="nn-btn danger-button nn-btn-sm" onclick="closeModal('modal-breach')">Acknowledge</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL — Ritual ═══ -->
+<div class="nn-modal-overlay" id="modal-ritual">
+  <div class="ritual-dialog">
+    <div class="nn-modal-header" style="border-color:rgba(255,215,0,.15)">
+      <span class="nn-ritual" style="color:var(--nn-neon-warn);font-size:.95rem">The Fifth Rite // 第五の儀式</span>
+      <button class="nn-modal-close" onclick="closeModal('modal-ritual')">✕</button>
+    </div>
+    <div class="nn-modal-body" style="text-align:center;padding:2.5rem 2rem">
+      <div class="nn-zen mb-3 flicker" style="font-size:3.5rem;color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">儀式</div>
+      <p class="nn-serif-jp nn-small mb-4" style="color:var(--nn-text-dim);line-height:2;font-style:italic">"The ceremony cannot be stopped once begun.<br>You were warned. 警告した。"</p>
+      <div class="nn-flex-wrap" style="justify-content:center">
+        <button class="nn-btn ritual-button nn-btn-lg" onclick="closeModal('modal-ritual');showToast('儀式開始','The rite has begun. There is no return.','danger')">Begin</button>
+        <button class="nn-btn ghost-button nn-btn-sm" onclick="closeModal('modal-ritual')">Flee</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL — Confirm ═══ -->
+<div class="nn-modal-overlay" id="modal-confirm">
+  <div class="nn-modal" style="max-width:400px">
+    <div class="nn-modal-header"><span class="nn-label neon-glow">Confirm Action</span><button class="nn-modal-close" onclick="closeModal('modal-confirm')">✕</button></div>
+    <div class="nn-modal-body">
+      <p class="nn-small" style="color:var(--nn-text-dim)">This action cannot be undone. The district data will be permanently erased.</p>
+    </div>
+    <div class="nn-modal-footer">
+      <button class="nn-btn ghost-button nn-btn-sm" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="nn-btn neon-button nn-btn-sm" onclick="closeModal('modal-confirm')">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     NAVBAR
+     ════════════════════════════════════════════════ -->
+<nav class="district-navbar scanlines">
+  <a class="navbar-logo flicker" href="#home">NN// <span style="opacity:.45;font-size:.7em">NECRO-NEON</span></a>
+  <ul class="navbar-links">
+    <li><a href="#city-section">City</a></li>
+    <li><a href="#section-buttons">Buttons</a></li>
+    <li><a href="#section-cards">Cards</a></li>
+    <li><a href="#section-effects">Effects</a></li>
+    <li><a href="#section-ui">UI</a></li>
+    <li><a href="#section-atmosphere">Atmos</a></li>
+    <li><a href="#section-themes">Districts</a></li>
+  </ul>
+  <div class="nn-flex" style="gap:.5rem">
+    <span class="nn-badge badge-safe badge-dot">v3.0</span>
+    <span class="nn-badge badge-primary" style="font-size:.55rem">呪われた都市</span>
+    <button class="nn-btn icon-button icon-button-sm" onclick="toggleInfestation()" data-tooltip="Toggle Infestation">👁</button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════════
+     HERO
+     ════════════════════════════════════════════════ -->
+<section id="home" style="min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:8rem 0 5rem">
+  <canvas id="city-hero-canvas" class="city-hero-bg city-hero-bg--on"></canvas>
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 50%,rgba(0,234,255,.05) 0%,transparent 70%),radial-gradient(ellipse 40% 60% at 80% 30%,rgba(255,45,120,.04) 0%,transparent 70%),linear-gradient(0deg,var(--nn-void) 0%,transparent 40%);z-index:1"></div>
+
+  <div class="nn-container" style="position:relative;z-index:3">
+    <div style="max-width:860px">
+      <div class="section-eyebrow">Framework v3.0 // Horror Cyber Tokyo // 惨事</div>
+      <h1 class="nn-display nn-h1 mb-4" style="line-height:.9">
+        <span class="glitch neon-glow" data-text="NECRO" style="display:block">NECRO</span>
+        <span class="glitch neon-glow-accent" data-text="NEON" style="display:block;padding-left:3.5rem;animation-delay:.4s">NEON</span>
+        <span class="nn-zen neon-glow-danger" style="display:block;font-size:clamp(1.5rem,3vw,2.8rem);padding-left:7rem;font-family:var(--nn-font-zen)">呪われた都市</span>
+      </h1>
+      <p class="mb-6" style="color:var(--nn-text-dim);max-width:500px;line-height:1.9;font-size:.95rem">
+        A visual ecosystem for building websites that exist inside a futuristic haunted neon city. Toggleable city backdrops. Infestation engine. 4 Districts. CSS-only effects.
+      </p>
+      <div class="nn-flex-wrap mb-4">
+        <button class="nn-btn neon-button nn-btn-lg" onclick="scrollTo('#city-section')">City Backdrops</button>
+        <button class="nn-btn danger-button nn-btn-lg" onclick="openModal('modal-breach')">⚠ Breach Alert</button>
+        <button class="nn-btn ritual-button" onclick="openModal('modal-ritual')">儀式 Ritual</button>
+        <button class="nn-btn ghost-button nn-btn-sm" onclick="toggleHeroBg()">Toggle Hero City</button>
+      </div>
+      <div class="nn-flex-wrap">
+        <span class="nn-badge badge-primary badge-dot">55+ Components</span>
+        <span class="nn-badge badge-accent badge-dot">25 Effects</span>
+        <span class="nn-badge badge-danger">Infestation Engine</span>
+        <span class="nn-badge badge-warn">4 Districts</span>
+        <span class="nn-badge badge-ghost">Rain Engine</span>
+        <span class="nn-badge badge-purple">Toggleable Backdrops</span>
+      </div>
+    </div>
+    <div class="nn-grid-4 nn-grid mt-6" style="max-width:660px;border-top:1px solid var(--nn-border-dim);padding-top:2rem">
+      <div class="nn-stat"><div class="nn-stat-value">55+</div><div class="nn-stat-label">Components</div></div>
+      <div class="nn-stat"><div class="nn-stat-value" style="color:var(--nn-neon-accent);text-shadow:var(--nn-glow-accent)">25</div><div class="nn-stat-label">Effects</div></div>
+      <div class="nn-stat"><div class="nn-stat-value" style="color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">4</div><div class="nn-stat-label">Districts</div></div>
+      <div class="nn-stat"><div class="nn-stat-value nn-zen" style="font-size:2rem;color:var(--nn-neon-danger);text-shadow:var(--nn-glow-danger)">感染</div><div class="nn-stat-label">Infestation</div></div>
+    </div>
+  </div>
+  <div style="position:absolute;right:3rem;top:50%;transform:translateY(-50%) rotate(90deg);font-family:var(--nn-font-mono);font-size:.58rem;letter-spacing:.3em;color:var(--nn-text-ghost);text-transform:uppercase;white-space:nowrap;z-index:3">走れ // 逃げろ // 生き残れ // 東京2099</div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     CITY BACKDROPS
+     ════════════════════════════════════════════════ -->
+<section class="nn-section" id="city-section" style="border-top:1px solid var(--nn-border-dim)">
+  <div class="nn-container">
+    <div class="section-eyebrow">Atmospheric Backgrounds</div>
+    <h2 class="nn-display nn-h2 neon-glow mb-2">City Backdrops // 都市背景</h2>
+    <p class="mb-4" style="color:var(--nn-text-dim);max-width:560px">Procedural canvas cityscapes. Toggle visibility via <span class="nn-code">.city-backdrop--off</span> / <span class="nn-code">.city-backdrop--on</span> or with JS helpers.</p>
+
+    <!-- Toggle controls -->
+    <div class="nn-card ghost-card mb-6" style="padding:1.25rem">
+      <div class="nn-flex-wrap">
+        <span class="nn-label neon-glow" style="margin-right:.5rem">Toggle Backdrops:</span>
+        <button class="nn-btn neon-button nn-btn-sm" onclick="toggleCityBackdrop('city-ruined')">Ruined</button>
+        <button class="nn-btn neon-button nn-btn-sm" onclick="toggleCityBackdrop('city-neon')">Neon City</button>
+        <button class="nn-btn neon-button nn-btn-sm" onclick="toggleCityBackdrop('city-ritual')">Ritual Ward</button>
+        <button class="nn-btn neon-button nn-btn-sm" onclick="toggleCityBackdrop('city-ghoul')">Ghoul District</button>
+        <button class="nn-btn ghost-button nn-btn-sm" onclick="hideAllCities()">Hide All</button>
+        <button class="nn-btn solid-button nn-btn-sm" onclick="showAllCities()">Show All</button>
+      </div>
+      <div class="code-block mt-3" style="font-size:.7rem">
+        <span class="cb-label">CSS Classes</span>
+<span class="code-comment">/* Show / hide via class — pure CSS, no JS needed */</span>
+<span class="code-key">&lt;div</span> <span class="code-val">class</span>=<span class="code-str">"city-backdrop"</span><span class="code-key">&gt;</span>            <span class="code-comment">← visible (default)</span>
+<span class="code-key">&lt;div</span> <span class="code-val">class</span>=<span class="code-str">"city-backdrop city-backdrop--off"</span><span class="code-key">&gt;</span>  <span class="code-comment">← hidden</span>
+<span class="code-key">&lt;div</span> <span class="code-val">class</span>=<span class="code-str">"city-backdrop city-backdrop--on"</span><span class="code-key">&gt;</span>   <span class="code-comment">← explicit on</span>
+
+<span class="code-comment">/* JS helpers */</span>
+<span class="code-cls">toggleCityBackdrop</span>(<span class="code-str">'my-canvas-id'</span>)
+<span class="code-cls">setCityBackdropVisible</span>(<span class="code-str">'my-canvas-id'</span>, <span class="code-val">false</span>)
+      </div>
+    </div>
+
+    <div class="nn-grid-2 nn-grid mb-4">
+      <!-- Ruined -->
+      <div id="wrap-city-ruined" class="city-backdrop city-fog" style="height:300px;border:1px solid rgba(204,0,24,.3)">
+        <canvas id="city-ruined"></canvas>
+        <div class="city-content city-label">
+          <div class="nn-display" style="font-size:1rem;color:var(--nn-neon-danger);text-shadow:var(--nn-glow-danger)">廃墟区域</div>
+          <div class="nn-micro" style="color:rgba(204,0,24,.6)">SECTOR 9 — ABANDONED 2089</div>
+        </div>
+        <div class="city-badge"><span class="nn-badge badge-danger badge-dot">QUARANTINED</span></div>
+      </div>
+      <!-- Neon megacity -->
+      <div id="wrap-city-neon" class="city-backdrop city-fog" style="height:300px;border:1px solid var(--nn-border)">
+        <canvas id="city-neon"></canvas>
+        <div class="city-content city-label">
+          <div class="nn-display" style="font-size:1rem;color:var(--nn-neon-primary);text-shadow:var(--nn-glow-primary)">東京2099</div>
+          <div class="nn-micro" style="color:var(--nn-text-dim)">MEGACITY ZONE — POP 42M</div>
+        </div>
+        <div class="city-badge"><span class="nn-badge badge-primary badge-dot">LIVE FEED</span></div>
+      </div>
+      <!-- Ghoul district -->
+      <div id="wrap-city-ghoul" class="city-backdrop city-fog" style="height:240px;border:1px solid rgba(157,0,255,.25)">
+        <canvas id="city-ghoul"></canvas>
+        <div class="city-content city-label">
+          <div class="nn-display" style="font-size:1rem;color:var(--nn-neon-purple);text-shadow:var(--nn-glow-purple)">鬼区域</div>
+          <div class="nn-micro" style="color:rgba(157,0,255,.6)">GHOUL DISTRICT — SECTOR 12</div>
+        </div>
+        <div class="city-badge"><span class="nn-badge badge-purple badge-dot">INFESTED</span></div>
+        <!-- Large decorative kanji -->
+        <div style="position:absolute;right:2rem;top:50%;transform:translateY(-50%);font-family:var(--nn-font-jp);font-weight:900;font-size:5rem;color:rgba(157,0,255,.06);text-shadow:0 0 40px rgba(157,0,255,.15);pointer-events:none;z-index:3">鬼</div>
+      </div>
+      <!-- Ritual ward -->
+      <div id="wrap-city-ritual" class="city-backdrop city-fog" style="height:240px;border:1px solid rgba(255,215,0,.2)">
+        <canvas id="city-ritual"></canvas>
+        <div class="city-content" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:3rem;z-index:3;pointer-events:none">
+          <span class="nn-zen" style="font-size:3rem;color:rgba(255,215,0,.12);text-shadow:0 0 30px rgba(255,215,0,.3);animation:nn-flicker 5s infinite">祀</span>
+          <span class="nn-zen" style="font-size:4.5rem;color:rgba(255,215,0,.08);text-shadow:0 0 40px rgba(255,215,0,.2);animation:nn-flicker 7s infinite 1s">儀</span>
+          <span class="nn-zen" style="font-size:2.8rem;color:rgba(255,215,0,.1);text-shadow:0 0 25px rgba(255,215,0,.2);animation:nn-flicker 4s infinite .5s">式</span>
+        </div>
+        <div class="city-badge"><span class="nn-badge badge-warn">CEREMONY</span></div>
+        <div class="city-label"><div class="nn-ritual" style="font-size:.8rem;color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">The Forbidden District</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     DISTRICTS
+     ════════════════════════════════════════════════ -->
+<section class="nn-section-sm" id="section-themes" style="border-top:1px solid var(--nn-border-dim);border-bottom:1px solid var(--nn-border-dim);background:var(--nn-abyss)">
+  <div class="nn-container">
+    <div class="nn-flex-between mb-4">
+      <div>
+        <div class="section-eyebrow">Theme System</div>
+        <h2 class="nn-display nn-h3 neon-glow mb-1">Districts // 地区</h2>
+        <p class="nn-small" style="color:var(--nn-text-dim)">Switch remaps all CSS variables — city colors, glows, borders, backgrounds.</p>
+      </div>
+      <div class="district-switcher">
+        <button class="district-btn active" onclick="setDistrict('tokyo-night',this)">🌃 Tokyo Night</button>
+        <button class="district-btn" onclick="setDistrict('ghoul',this)">👁 Ghoul</button>
+        <button class="district-btn" onclick="setDistrict('ritual',this)">🩸 Ritual</button>
+        <button class="district-btn" onclick="setDistrict('void',this)">◼ Void</button>
+      </div>
+    </div>
+    <div class="nn-grid-4 nn-grid">
+      <div><div class="nn-label mb-1" style="color:var(--nn-text-dim)">TOKYO NIGHT</div><div class="nn-palette"><div class="palette-swatch" style="background:#00eaff"></div><div class="palette-swatch" style="background:#ff2d78"></div><div class="palette-swatch" style="background:#cc0018"></div><div class="palette-swatch" style="background:#ffd700"></div><div class="palette-swatch" style="background:#0a1520"></div><div class="palette-swatch" style="background:#020408"></div></div></div>
+      <div><div class="nn-label mb-1" style="color:var(--nn-text-dim)">GHOUL DISTRICT</div><div class="nn-palette"><div class="palette-swatch" style="background:#9d00ff"></div><div class="palette-swatch" style="background:#ff2d78"></div><div class="palette-swatch" style="background:#cc0018"></div><div class="palette-swatch" style="background:#ff8c00"></div><div class="palette-swatch" style="background:#0e0510"></div><div class="palette-swatch" style="background:#040105"></div></div></div>
+      <div><div class="nn-label mb-1" style="color:var(--nn-text-dim)">RITUAL MODE</div><div class="nn-palette"><div class="palette-swatch" style="background:#ffd700"></div><div class="palette-swatch" style="background:#cc0018"></div><div class="palette-swatch" style="background:#ff8c00"></div><div class="palette-swatch" style="background:#9d00ff"></div><div class="palette-swatch" style="background:#110a08"></div><div class="palette-swatch" style="background:#05030a"></div></div></div>
+      <div><div class="nn-label mb-1" style="color:var(--nn-text-dim)">VOID</div><div class="nn-palette"><div class="palette-swatch" style="background:#1a1a1a"></div><div class="palette-swatch" style="background:#ff2d78"></div><div class="palette-swatch" style="background:#111"></div><div class="palette-swatch" style="background:#0a0a0a"></div><div class="palette-swatch" style="background:#060606"></div><div class="palette-swatch" style="background:#000"></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     BUTTONS
+     ════════════════════════════════════════════════ -->
+<section class="nn-section" id="section-buttons">
+  <div class="nn-container">
+    <div class="section-eyebrow">Component Library</div>
+    <h2 class="nn-display nn-h2 neon-glow mb-6">Buttons // ボタン</h2>
+    <div class="nn-grid-2 nn-grid mb-4">
+      <div class="nn-card cyber-card nn-corner-tl nn-corner-br">
+        <div class="nn-card-header"><span class="nn-label neon-glow">9 Variants + Sizes + States</span></div>
+        <div class="nn-flex-col">
+          <div class="nn-flex-wrap">
+            <button class="nn-btn neon-button">Neon</button>
+            <button class="nn-btn accent-button">Accent</button>
+            <button class="nn-btn danger-button">Danger</button>
+            <button class="nn-btn ghost-button">Ghost</button>
+          </div>
+          <div class="nn-flex-wrap">
+            <button class="nn-btn solid-button">Solid</button>
+            <button class="nn-btn ghoul-button">鬼 Ghoul</button>
+            <button class="nn-btn void-button">Void</button>
+            <button class="nn-btn ritual-button">儀式 Ritual</button>
+          </div>
+          <div class="nn-flex-wrap" style="align-items:center">
+            <button class="nn-btn neon-button nn-btn-xl">XL</button>
+            <button class="nn-btn neon-button nn-btn-lg">LG</button>
+            <button class="nn-btn neon-button">MD</button>
+            <button class="nn-btn neon-button nn-btn-sm">SM</button>
+            <button class="nn-btn neon-button nn-btn-xs">XS</button>
+          </div>
+          <div class="nn-flex-wrap">
+            <button class="nn-btn icon-button" data-tooltip="Add">⊕</button>
+            <button class="nn-btn icon-button" data-tooltip="Warning">⚠</button>
+            <button class="nn-btn icon-button" data-tooltip="Scan">◈</button>
+            <button class="nn-btn icon-button" data-tooltip="Eye">👁</button>
+            <button class="nn-btn neon-button" disabled>Disabled</button>
+          </div>
+          <div class="nn-flex-wrap">
+            <button class="nn-btn neon-button flicker">Flickering</button>
+            <button class="nn-btn danger-button corrupted">Corrupted</button>
+            <button class="nn-btn neon-button pulse-glow">Pulsing</button>
+            <button class="nn-btn accent-button shimmer" style="-webkit-text-fill-color:unset">Shimmer</button>
+          </div>
+          <div class="nn-flex-wrap">
+            <button class="nn-btn ghost-button nn-btn-sm" onclick="showToast('System online','Neural link established.','primary')">💬 Toast Info</button>
+            <button class="nn-btn danger-button nn-btn-sm" onclick="showToast('⚠ BREACH','Sector 7 containment failed.','danger')">💬 Toast Danger</button>
+            <button class="nn-btn nn-btn-sm" style="background:transparent;color:var(--nn-neon-safe);border-color:var(--nn-neon-safe)" onclick="showToast('Stable','All systems nominal.','safe')">💬 Toast Safe</button>
+            <button class="nn-btn ghost-button nn-btn-sm" onclick="openModal('modal-confirm')">Open Modal</button>
+          </div>
+        </div>
+      </div>
+      <div class="code-block scanlines" style="font-size:.7rem">
+        <span class="cb-label">Usage</span>
+<span class="code-comment">/* Base class + variant */</span>
+<span class="code-key">&lt;button</span> <span class="code-val">class</span>=<span class="code-str">"nn-btn neon-button"</span><span class="code-key">&gt;</span>Label<span class="code-key">&lt;/button&gt;</span>
+
+<span class="code-comment">/* Stack size modifier */</span>
+<span class="code-key">&lt;button</span> <span class="code-val">class</span>=<span class="code-str">"nn-btn neon-button nn-btn-lg"</span><span class="code-key">&gt;</span>Large<span class="code-key">&lt;/button&gt;</span>
+
+<span class="code-comment">/* Add effect classes freely */</span>
+<span class="code-key">&lt;button</span> <span class="code-val">class</span>=<span class="code-str">"nn-btn danger-button flicker"</span><span class="code-key">&gt;</span>
+  ⚠ ALERT
+<span class="code-key">&lt;/button&gt;</span>
+
+<span class="code-key">&lt;button</span> <span class="code-val">class</span>=<span class="code-str">"nn-btn neon-button pulse-glow nn-btn-xl"</span><span class="code-key">&gt;</span>
+  Primary CTA
+<span class="code-key">&lt;/button&gt;</span>
+
+<span class="code-comment">/* Variants */</span>
+<span class="code-cls">neon-button</span>    <span class="code-comment">primary</span>
+<span class="code-cls">accent-button</span>  <span class="code-comment">hot pink</span>
+<span class="code-cls">danger-button</span>  <span class="code-comment">blood red</span>
+<span class="code-cls">ghost-button</span>   <span class="code-comment">barely visible</span>
+<span class="code-cls">solid-button</span>   <span class="code-comment">filled primary</span>
+<span class="code-cls">ghoul-button</span>   <span class="code-comment">purple corrupt</span>
+<span class="code-cls">void-button</span>    <span class="code-comment">almost invisible</span>
+<span class="code-cls">ritual-button</span>  <span class="code-comment">gold theatrical</span>
+<span class="code-cls">icon-button</span>    <span class="code-comment">square icon</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     CARDS
+     ════════════════════════════════════════════════ -->
+<section class="nn-section" id="section-cards" style="background:var(--nn-abyss);border-top:1px solid var(--nn-border-dim)">
+  <div class="nn-container">
+    <div class="section-eyebrow">Component Library</div>
+    <h2 class="nn-display nn-h2 neon-glow mb-6">Cards & Panels // カード</h2>
+    <div class="nn-grid-3 nn-grid mb-4">
+      <div class="nn-card cyber-card nn-corner-tl nn-corner-br">
+        <div class="nn-flex-between mb-3"><span class="nn-label neon-glow">.cyber-card</span><span class="nn-badge badge-primary">ACTIVE</span></div>
+        <h3 class="nn-display mb-2" style="font-size:.9rem;color:var(--nn-text-bright)">District Report</h3>
+        <p class="nn-small mb-3" style="color:var(--nn-text-dim)">Clipped corner, neon edge reveal on hover. Adapts to current district theme automatically.</p>
+        <div class="nn-flex-wrap"><button class="nn-btn neon-button nn-btn-sm">Access</button><button class="nn-btn ghost-button nn-btn-sm">Details</button></div>
+      </div>
+      <div class="nn-card hologram-card hologram">
+        <div class="nn-flex-between mb-3"><span class="nn-label neon-glow">.hologram-card</span><span class="nn-badge badge-primary badge-dot">LIVE</span></div>
+        <div class="nn-display mb-1" style="font-size:2rem;color:var(--nn-neon-primary);text-shadow:var(--nn-glow-primary)">◈ HQ-7</div>
+        <p class="nn-small mb-3" style="color:var(--nn-text-dim)">Scanning overlay + flicker animation. Clipped both corners.</p>
+        <div class="nn-progress mb-1"><div class="nn-progress-fill" style="width:73%"></div></div>
+        <div class="nn-label" style="color:var(--nn-text-dim)">Signal: 73%</div>
+      </div>
+      <div class="nn-card warning-card">
+        <div class="nn-flex-between mb-3"><span class="nn-label" style="color:var(--nn-neon-danger)">⚠ .warning-card</span><span class="nn-badge badge-danger badge-dot">CRITICAL</span></div>
+        <h3 class="nn-display mb-2" style="font-size:.9rem;color:var(--nn-neon-danger);text-shadow:var(--nn-glow-danger)">SECTOR BREACH</h3>
+        <p class="nn-small mb-3" style="color:var(--nn-text-dim)">Red border glow. Combine with <span class="nn-code">.flicker</span> or <span class="nn-code">.horror-bleed</span>.</p>
+        <button class="nn-btn danger-button nn-btn-sm">Acknowledge</button>
+      </div>
+      <div class="nn-card ghost-card">
+        <div class="nn-flex-between mb-3"><span class="nn-label" style="color:var(--nn-text-dim)">.ghost-card</span><span class="nn-badge badge-ghost">PASSIVE</span></div>
+        <p class="nn-small mb-3" style="color:var(--nn-text-ghost)">Barely-there dashed border. For secondary, dormant, or placeholder states.</p>
+        <button class="nn-btn ghost-button nn-btn-sm">Reveal</button>
+      </div>
+      <div class="nn-card ritual-card">
+        <div class="nn-flex-between mb-3"><span class="nn-ritual" style="color:var(--nn-neon-warn);font-size:.8rem">.ritual-card</span><span class="nn-badge badge-warn">CEREMONY</span></div>
+        <h3 class="nn-ritual mb-2" style="font-size:1rem;color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">The Fifth Ward</h3>
+        <p class="nn-small mb-3" style="color:var(--nn-text-dim)">Gold top line. Theatrical ambiance. For ARG, horror, or occult UI.</p>
+        <button class="nn-btn ritual-button nn-btn-sm">Enter</button>
+      </div>
+      <div class="nn-card shrine-card">
+        <div class="nn-flex-between mb-3"><span class="nn-ritual" style="color:var(--nn-neon-warn);font-size:.8rem">.shrine-card</span><span class="nn-badge badge-warn badge-jp">神社</span></div>
+        <h3 class="nn-zen mb-2" style="font-size:1.3rem;color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">聖域</h3>
+        <p class="nn-small mb-3" style="color:var(--nn-text-dim)">Shrine variant. Gold corner clip + torii icon. Deep background gradient.</p>
+        <button class="nn-btn ritual-button nn-btn-sm" style="font-family:var(--nn-font-zen)">参拝</button>
+      </div>
+    </div>
+
+    <!-- Terminal + Glitch window row -->
+    <div class="nn-grid-2 nn-grid mb-4">
+      <div class="data-terminal">
+        <div class="terminal-bar">
+          <span class="terminal-dot" style="background:#ff2d78;box-shadow:0 0 5px #ff2d78"></span>
+          <span class="terminal-dot" style="background:#ffd700;box-shadow:0 0 5px #ffd700"></span>
+          <span class="terminal-dot" style="background:#00ff88;box-shadow:0 0 5px #00ff88"></span>
+          <span class="nn-mono nn-micro" style="color:var(--nn-text-ghost);margin-left:.5rem">.data-terminal</span>
+        </div>
+        <div class="terminal-body">
+          <span class="terminal-prompt">INIT NECRO-NEON v3.0</span>
+          <span style="color:var(--nn-text-dim)">Loading framework...</span>
+          <span class="terminal-ok">Core modules loaded</span>
+          <span class="terminal-ok">Rain engine active</span>
+          <span class="terminal-ok">City backdrops ready</span>
+          <span class="terminal-warn">Infestation: detected</span>
+          <span class="terminal-err">Sector 9: offline</span>
+          <span class="terminal-prompt terminal-cursor">Awaiting input</span>
+        </div>
+      </div>
+      <div class="glitch-window scanlines digital-noise">
+        <div class="window-bar">
+          <span class="nn-label glitch-text" style="color:var(--nn-neon-danger)">⚠ CRITICAL_ERR.exe</span>
+          <span class="nn-badge badge-danger badge-dot">CORRUPT</span>
+        </div>
+        <div style="padding:1.5rem">
+          <div class="glitch-text nn-display mb-2" style="font-size:1.1rem;color:var(--nn-neon-danger)">BREACH DETECTED</div>
+          <p class="nn-mono nn-small mb-3" style="color:var(--nn-text-dim);line-height:1.9">
+            <span style="color:var(--nn-neon-danger)">[ERR 0x4f3a]</span> Sector 7 containment failure.<br>
+            All personnel evacuate immediately.<br>
+            <span class="flicker" style="color:var(--nn-neon-warn)">Subject has escaped designated zone.</span>
+          </p>
+          <div class="nn-progress progress-danger mb-1"><div class="nn-progress-fill" style="width:97%"></div></div>
+          <div class="nn-label" style="color:var(--nn-neon-danger)">Containment integrity: 3%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shrine panel -->
+    <div class="shrine-panel p-4 mb-4">
+      <div class="nn-flex-between mb-4">
+        <div>
+          <div class="nn-ritual mb-1" style="font-size:1.1rem;color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">The Shrine District</div>
+          <div class="nn-label" style="color:var(--nn-text-dim)">聖域 // Sanctuary Zone // .shrine-panel</div>
+        </div>
+        <div class="nn-zen" style="font-size:2.5rem;opacity:.2;color:var(--nn-neon-warn)">⛩</div>
+      </div>
+      <div class="nn-grid-3 nn-grid">
+        <div class="nn-stat"><div class="nn-stat-value" style="color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">47</div><div class="nn-stat-label">Ceremonies</div></div>
+        <div class="nn-stat"><div class="nn-stat-value" style="color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn);font-family:var(--nn-font-zen)">神</div><div class="nn-stat-label">Active Shrine</div></div>
+        <div class="nn-stat"><div class="nn-stat-value" style="color:var(--nn-neon-accent);text-shadow:var(--nn-glow-accent)">∞</div><div class="nn-stat-label">Iterations</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     EFFECTS
+     ════════════════════════════════════════════════ -->
+<section class="nn-section" id="section-effects">
+  <div class="nn-container">
+    <div class="section-eyebrow">Effects Library</div>
+    <h2 class="nn-display nn-h2 neon-glow mb-6">Visual Effects // エフェクト</h2>
+    <div class="nn-grid-3 nn-grid mb-6">
+      <div class="nn-card cyber-card"><div class="effect-demo"><span class="nn-display glitch neon-glow" data-text="SYSTEM ERROR" style="font-size:1.2rem">SYSTEM ERROR</span><span class="effect-label">.glitch</span></div><div class="nn-card-body mt-4"><span class="nn-label neon-glow mb-1">Glitch</span><p class="nn-small" style="color:var(--nn-text-dim)">RGB split + skew. Needs <span class="nn-code">data-text</span> attr.</p></div></div>
+      <div class="nn-card cyber-card"><div class="effect-demo hologram" style="border:none"><div style="text-align:center"><div class="nn-display neon-glow" style="font-size:2.5rem">◈</div><div class="nn-label neon-glow mt-2">SCANNING</div></div><span class="effect-label">.hologram</span></div><div class="nn-card-body mt-4"><span class="nn-label neon-glow mb-1">Hologram</span><p class="nn-small" style="color:var(--nn-text-dim)">Scan line, flicker, glow, backdrop blur.</p></div></div>
+      <div class="nn-card cyber-card"><div class="effect-demo scanlines" style="background:var(--nn-panel)"><div style="text-align:center"><div class="nn-display" style="font-size:.9rem;color:var(--nn-neon-primary)">BROADCAST LIVE</div><div class="nn-small mt-2" style="color:var(--nn-text-dim)">Channel 7 // 東京</div></div><span class="effect-label">.scanlines</span></div><div class="nn-card-body mt-4"><span class="nn-label neon-glow mb-1">Scanlines</span><p class="nn-small" style="color:var(--nn-text-dim)">CRT overlay via ::after. Zero JS needed.</p></div></div>
+      <div class="nn-card cyber-card"><div class="effect-demo"><div style="text-align:center"><div class="nn-display neon-glow mb-2" style="font-size:1rem">CYAN DISTRICT</div><div class="nn-display neon-glow-accent mb-2" style="font-size:1rem">PINK SECTOR</div><div class="nn-display neon-glow-danger" style="font-size:1rem">RED ZONE</div></div><span class="effect-label">.neon-glow-*</span></div><div class="nn-card-body mt-4"><span class="nn-label neon-glow mb-1">Neon Glow</span><p class="nn-small" style="color:var(--nn-text-dim)">6 colour variants. Text + boxes.</p></div></div>
+      <div class="nn-card cyber-card"><div class="effect-demo"><div class="nn-display neon-glow neon-sign" style="font-size:1.5rem">ネオン街</div><span class="effect-label">.neon-sign</span></div><div class="nn-card-body mt-4"><span class="nn-label neon-glow mb-1">Neon Sign</span><p class="nn-small" style="color:var(--nn-text-dim)">Broken bulb flicker with glow-off state.</p></div></div>
+      <div class="nn-card cyber-card"><div class="effect-demo digital-noise" style="background:var(--nn-panel);position:relative;overflow:hidden"><div style="text-align:center;z-index:2;position:relative"><div class="nn-display" style="font-size:.9rem;color:var(--nn-neon-primary)">SIGNAL CORRUPT</div><div class="nn-small mt-2" style="color:var(--nn-text-dim)">entropy: 87%</div></div><span class="effect-label">.digital-noise</span></div><div class="nn-card-body mt-4"><span class="nn-label neon-glow mb-1">Digital Noise</span><p class="nn-small" style="color:var(--nn-text-dim)">SVG turbulence, animated. mix-blend-mode:screen.</p></div></div>
+      <div class="nn-card cyber-card"><div class="effect-demo"><div class="nn-display neon-glow corrupted" style="font-size:1.3rem">感染体</div><span class="effect-label">.corrupted</span></div><div class="nn-card-body mt-4"><span class="nn-label neon-glow mb-1">Corrupted</span><p class="nn-small" style="color:var(--nn-text-dim)">Periodic shake + hue shift. Infestation effect.</p></div></div>
+      <div class="nn-card cyber-card"><div class="effect-demo"><div class="nn-display neon-glow-danger horror-bleed" style="font-size:1.1rem;border:1px solid;padding:.5rem 1rem;position:relative">HORROR BLEED</div><span class="effect-label">.horror-bleed</span></div><div class="nn-card-body mt-4"><span class="nn-label neon-glow mb-1">Horror Bleed</span><p class="nn-small" style="color:var(--nn-text-dim)">Pulsing inward red shadow. Max horror.</p></div></div>
+      <div class="nn-card cyber-card"><div class="effect-demo"><div style="text-align:center"><div class="nn-display shimmer" style="font-size:1.4rem">SHIMMER</div><div class="nn-small mt-2" style="color:var(--nn-text-dim)">holographic sheen</div></div><span class="effect-label">.shimmer</span></div><div class="nn-card-body mt-4"><span class="nn-label neon-glow mb-1">Shimmer</span><p class="nn-small" style="color:var(--nn-text-dim)">Gradient sweep across text. CSS only.</p></div></div>
+    </div>
+
+    <!-- Combined effects demo -->
+    <div class="labeled-sep"><span>Combined Effects</span></div>
+    <div class="nn-grid-2 nn-grid">
+      <div class="nn-card glitch-window scanlines digital-noise">
+        <div class="window-bar"><span class="nn-label glitch-text" style="color:var(--nn-neon-danger)">⚠ COMBINED EXAMPLE</span><span class="nn-badge badge-danger badge-dot">LIVE</span></div>
+        <div style="padding:1.25rem">
+          <div class="glitch nn-display mb-2" data-text="INFESTATION" style="font-size:1.1rem;color:var(--nn-neon-danger);text-shadow:var(--nn-glow-danger)">INFESTATION</div>
+          <p class="nn-mono nn-small" style="color:var(--nn-text-dim);line-height:1.9"><span class="flicker" style="color:var(--nn-neon-warn)">⚠ 感染確認</span> Entity class unknown.<br>Vein spread: <span style="color:var(--nn-neon-danger)">78%</span> of sector.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <span class="cb-label">Stacking</span>
+<span class="code-comment">/* Layer effects as classes */</span>
+<span class="code-key">&lt;div</span> <span class="code-val">class</span>=<span class="code-str">"glitch-window scanlines digital-noise"</span><span class="code-key">&gt;</span>
+
+<span class="code-comment">/* Glitch title + glow */</span>
+<span class="code-key">&lt;h1</span> <span class="code-val">class</span>=<span class="code-str">"glitch neon-glow"</span>
+     <span class="code-val">data-text</span>=<span class="code-str">"NECRO"</span><span class="code-key">&gt;</span>NECRO<span class="code-key">&lt;/h1&gt;</span>
+
+<span class="code-comment">/* Full horror combo */</span>
+<span class="code-key">&lt;div</span> <span class="code-val">class</span>=<span class="code-str">"warning-card horror-bleed flicker digital-noise"</span><span class="code-key">&gt;</span>
+
+<span class="code-comment">/* Corrupted badge */</span>
+<span class="code-key">&lt;span</span> <span class="code-val">class</span>=<span class="code-str">"nn-badge badge-danger corrupted"</span><span class="code-key">&gt;</span>感染<span class="code-key">&lt;/span&gt;</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     UI COMPONENTS
+     ════════════════════════════════════════════════ -->
+<section class="nn-section" id="section-ui" style="background:var(--nn-abyss);border-top:1px solid var(--nn-border-dim)">
+  <div class="nn-container">
+    <div class="section-eyebrow">Component Library</div>
+    <h2 class="nn-display nn-h2 neon-glow mb-6">UI Components // UI要素</h2>
+
+    <div class="nn-grid-2 nn-grid mb-6">
+      <!-- Badges -->
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Badges & Tags</div>
+        <div class="nn-flex-col">
+          <div class="nn-flex-wrap">
+            <span class="nn-badge badge-primary badge-dot">Online</span>
+            <span class="nn-badge badge-accent">District 4</span>
+            <span class="nn-badge badge-danger badge-dot">Critical</span>
+            <span class="nn-badge badge-warn">Warning</span>
+            <span class="nn-badge badge-safe badge-dot">Stable</span>
+            <span class="nn-badge badge-ghost">Offline</span>
+            <span class="nn-badge badge-purple">Augment</span>
+            <span class="nn-badge badge-solid">NEW</span>
+          </div>
+          <div class="nn-flex-wrap">
+            <span class="nn-badge badge-danger badge-dot">INFESTED</span>
+            <span class="nn-badge badge-warn">QUARANTINE</span>
+            <span class="nn-badge badge-primary">SCANNING</span>
+            <span class="nn-badge badge-ghost">DORMANT</span>
+            <span class="nn-badge badge-jp badge-warn">危険</span>
+            <span class="nn-badge badge-jp badge-danger">呪われた</span>
+          </div>
+        </div>
+      </div>
+      <!-- Banners -->
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Warning Banners</div>
+        <div class="nn-flex-col">
+          <div class="warning-banner banner-primary"><span class="banner-icon">ℹ</span><span>System update at 03:00 JST</span></div>
+          <div class="warning-banner banner-warn"><span class="banner-icon">⚠</span><span>Anomaly detected — Sector 9</span></div>
+          <div class="warning-banner banner-danger"><span class="banner-icon">☠</span><span>CONTAINMENT FAILURE — evacuate</span></div>
+          <div class="warning-banner banner-safe"><span class="banner-icon">✔</span><span>All systems nominal — District 1</span></div>
+          <div class="warning-banner banner-ghost"><span class="banner-icon">·</span><span>No active incidents in this district</span></div>
+        </div>
+      </div>
+      <!-- Kanji + Signs -->
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Kanji Signs & Street UI</div>
+        <div class="nn-flex-wrap mb-3">
+          <div class="kanji-sign hologram" style="padding:.75rem 1rem"><div class="kanji-main flicker">危</div><div class="kanji-sub">DANGER</div></div>
+          <div class="kanji-sign" style="padding:.75rem 1rem;border-color:var(--nn-neon-accent)"><div class="kanji-main" style="color:var(--nn-neon-accent);text-shadow:var(--nn-glow-accent)">呪</div><div class="kanji-sub">CURSED</div></div>
+          <div class="kanji-sign" style="padding:.75rem 1rem;border-color:var(--nn-neon-warn)"><div class="kanji-main" style="color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">夜</div><div class="kanji-sub">NIGHT</div></div>
+          <div class="kanji-sign glitch-mild" data-text="逃" style="padding:.75rem 1rem"><div class="kanji-main neon-glow-danger">逃</div><div class="kanji-sub">ESCAPE</div></div>
+          <div class="kanji-sign corrupted" style="padding:.75rem 1rem;border-color:var(--nn-neon-purple)"><div class="kanji-main" style="color:var(--nn-neon-purple);text-shadow:var(--nn-glow-purple)">鬼</div><div class="kanji-sub">GHOUL</div></div>
+          <div class="kanji-sign" style="padding:.75rem 1rem;border-color:var(--nn-neon-safe)"><div class="kanji-main" style="color:var(--nn-neon-safe);text-shadow:var(--nn-glow-safe)">生</div><div class="kanji-sub">SURVIVE</div></div>
+        </div>
+        <div class="nn-flex-wrap mb-3">
+          <div class="street-sign">第7区</div>
+          <div class="street-sign" style="background:var(--nn-neon-primary);color:var(--nn-void)">SECTOR 2</div>
+          <div class="street-sign" style="background:var(--nn-neon-warn);color:var(--nn-void)">立入禁止</div>
+          <div class="street-sign" style="background:var(--nn-neon-purple);color:#fff">GHOUL ZONE</div>
+          <div class="street-sign" style="background:var(--nn-neon-safe);color:var(--nn-void)">SAFE ZONE</div>
+        </div>
+        <!-- Station sign -->
+        <div class="station-sign">
+          <div class="station-line">A</div>
+          <div class="station-name">AKIHABARA</div>
+          <div class="station-jp">秋葉原</div>
+        </div>
+      </div>
+      <!-- Avatars + Profile -->
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Avatars & Profiles</div>
+        <div class="nn-flex-col">
+          <div class="profile-card">
+            <div class="nn-avatar nn-avatar-lg">K</div>
+            <div class="profile-info">
+              <div class="profile-name">KANEDA_07</div>
+              <div class="profile-role">Neural Operator // Sector 3</div>
+              <div class="nn-flex-wrap mt-1"><span class="nn-badge badge-primary badge-dot">Online</span><span class="nn-badge badge-warn">Sector 3</span></div>
+            </div>
+          </div>
+          <div class="profile-card">
+            <div class="nn-avatar nn-avatar-lg nn-avatar-danger">⚠</div>
+            <div class="profile-info">
+              <div class="profile-name" style="color:var(--nn-neon-danger)">ENTITY_UNKNOWN</div>
+              <div class="profile-role">Class S // Uncontained</div>
+              <div class="nn-flex-wrap mt-1"><span class="nn-badge badge-danger badge-dot">Breached</span><span class="nn-badge badge-ghost">Sector 9</span></div>
+            </div>
+          </div>
+          <div class="nn-flex" style="gap:.6rem">
+            <div class="nn-avatar nn-avatar-sm">鬼</div>
+            <div class="nn-avatar nn-avatar-sm nn-avatar-warn">儀</div>
+            <div class="nn-avatar nn-avatar-sm nn-avatar-purple">◈</div>
+            <div class="nn-avatar nn-avatar-xs">A</div>
+            <div class="nn-avatar nn-avatar-xs nn-avatar-danger">☠</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="nn-card cyber-card mb-6">
+      <div class="nn-label neon-glow mb-3">Tabs // タブ</div>
+      <div class="nn-tabs">
+        <button class="nn-tab active" onclick="switchTab(this,'tab-map')">District Map</button>
+        <button class="nn-tab" onclick="switchTab(this,'tab-intel')">Intel</button>
+        <button class="nn-tab" onclick="switchTab(this,'tab-threats')">⚠ Threats</button>
+        <button class="nn-tab" onclick="switchTab(this,'tab-ritual')">儀式</button>
+      </div>
+      <div class="nn-tab-content active" id="tab-map">
+        <div class="nn-grid-4 nn-grid">
+          <div class="nn-stat"><div class="nn-stat-value">23</div><div class="nn-stat-label">Active Sectors</div></div>
+          <div class="nn-stat"><div class="nn-stat-value" style="color:var(--nn-neon-danger);text-shadow:var(--nn-glow-danger)">7</div><div class="nn-stat-label">Quarantined</div></div>
+          <div class="nn-stat"><div class="nn-stat-value" style="color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">3</div><div class="nn-stat-label">Evacuating</div></div>
+          <div class="nn-stat"><div class="nn-stat-value" style="color:var(--nn-neon-safe);text-shadow:var(--nn-glow-safe)">13</div><div class="nn-stat-label">Stable</div></div>
+        </div>
+      </div>
+      <div class="nn-tab-content" id="tab-intel">
+        <div class="warning-banner banner-warn mb-2"><span class="banner-icon">⚠</span><span>Last verified: 2099-07-14 // 22:47 JST</span></div>
+        <p class="nn-small" style="color:var(--nn-text-dim)">Surveillance data indicates increased ghoul activity in northwest sectors. Recommend avoiding Sector 9 after dusk.</p>
+      </div>
+      <div class="nn-tab-content" id="tab-threats">
+        <div class="nn-flex-col">
+          <div class="warning-banner banner-danger"><span class="banner-icon">☠</span><span>CLASS-S ENTITY — Sector 9 — uncontained</span></div>
+          <div class="warning-banner banner-warn"><span class="banner-icon">⚠</span><span>Ritual activity — Sector 12 — third night</span></div>
+          <div class="warning-banner banner-primary"><span class="banner-icon">ℹ</span><span>Neural disruption zone — Sector 5</span></div>
+        </div>
+      </div>
+      <div class="nn-tab-content" id="tab-ritual">
+        <div style="text-align:center;padding:1.5rem">
+          <div class="nn-zen mb-2" style="font-size:2.5rem;color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn);animation:nn-flicker 4s infinite">第五の儀式</div>
+          <p class="nn-serif-jp nn-small" style="color:var(--nn-text-dim)">Three nights have passed. The ceremony is complete.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accordion + Timeline -->
+    <div class="nn-grid-2 nn-grid mb-6">
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Accordion</div>
+        <div class="nn-accordion">
+          <div class="nn-accordion-item">
+            <button class="nn-accordion-trigger open" onclick="toggleAcc(this)"><span>▸ District Protocols</span><span class="acc-icon">+</span></button>
+            <div class="nn-accordion-body open">All personnel must carry district ID. Curfew enforced 23:00–05:00 in red zones. Ghoul sightings must be reported to Central Command immediately.</div>
+          </div>
+          <div class="nn-accordion-item">
+            <button class="nn-accordion-trigger" onclick="toggleAcc(this)"><span>▸ Infestation Response</span><span class="acc-icon">+</span></button>
+            <div class="nn-accordion-body">Do not engage infected directly. Maintain 50m distance. Activate emergency beacon. Wait for extraction team at designated safe zone checkpoint.</div>
+          </div>
+          <div class="nn-accordion-item">
+            <button class="nn-accordion-trigger" onclick="toggleAcc(this)"><span>▸ Ritual Containment</span><span class="acc-icon">+</span></button>
+            <div class="nn-accordion-body">Ritual sites must not be disturbed. Mark perimeter and contact Shrine Division. Under no circumstances attempt to complete an ongoing ceremony.</div>
+          </div>
+          <div class="nn-accordion-item">
+            <button class="nn-accordion-trigger" onclick="toggleAcc(this)"><span>▸ Neural Link Protocols</span><span class="acc-icon">+</span></button>
+            <div class="nn-accordion-body">Neural augments must be verified at sector checkpoints. Unauthorized modifications will trigger containment lockdown. Report anomalous thoughts immediately.</div>
+          </div>
+        </div>
+      </div>
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Timeline // タイムライン</div>
+        <div class="nn-timeline">
+          <div class="nn-timeline-item"><div class="nn-timeline-time">2099 · 07 · 14 · 22:31</div><div class="nn-timeline-title" style="color:var(--nn-neon-primary)">Neural link established</div><div class="nn-timeline-desc">Operator KANEDA_07 connected to district surveillance grid.</div></div>
+          <div class="nn-timeline-item t-danger"><div class="nn-timeline-time">22:44</div><div class="nn-timeline-title" style="color:var(--nn-neon-danger)">⚠ Breach detected</div><div class="nn-timeline-desc">Sector 9 containment failing. Entity class: unknown.</div></div>
+          <div class="nn-timeline-item t-warn"><div class="nn-timeline-time">22:51</div><div class="nn-timeline-title" style="color:var(--nn-neon-warn)">Evacuation initiated</div><div class="nn-timeline-desc">44% of district population reached safe zones.</div></div>
+          <div class="nn-timeline-item t-danger"><div class="nn-timeline-time">22:58</div><div class="nn-timeline-title" style="color:var(--nn-neon-danger)">Ritual ward activated</div><div class="nn-timeline-desc">Shrine Division deployed to Sector 12. Ceremony detected.</div></div>
+          <div class="nn-timeline-item t-danger"><div class="nn-timeline-time">23:00 →</div><div class="nn-timeline-title terminal-cursor" style="color:var(--nn-neon-danger)">Signal lost</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="nn-card cyber-card mb-6">
+      <div class="nn-label neon-glow mb-3">Data Table // テーブル</div>
+      <div style="overflow-x:auto">
+        <table class="nn-table">
+          <thead><tr><th>Sector</th><th>District</th><th>Status</th><th>Population</th><th>Threat</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>Sector 1</td><td class="td-dim">Shinjuku</td><td><span class="nn-badge badge-safe badge-dot">STABLE</span></td><td>4.2M</td><td class="td-safe">Class 0</td><td><button class="nn-btn neon-button nn-btn-xs">View</button></td></tr>
+            <tr><td>Sector 3</td><td class="td-dim">Shibuya</td><td><span class="nn-badge badge-primary">MONITORING</span></td><td>2.1M</td><td class="td-safe">Class 1</td><td><button class="nn-btn neon-button nn-btn-xs">View</button></td></tr>
+            <tr><td>Sector 7</td><td class="td-dim">Akihabara</td><td><span class="nn-badge badge-warn badge-dot">ELEVATED</span></td><td>1.8M</td><td class="td-warn">Class 3</td><td><button class="nn-btn accent-button nn-btn-xs">Monitor</button></td></tr>
+            <tr><td>Sector 9</td><td class="td-dim">East Ward</td><td><span class="nn-badge badge-danger badge-dot">BREACH</span></td><td class="td-danger">0</td><td class="td-danger">CLASS S</td><td><button class="nn-btn danger-button nn-btn-xs">⚠ Alert</button></td></tr>
+            <tr><td>Sector 12</td><td class="td-dim">Ritual Ward</td><td><span class="nn-badge badge-warn">CEREMONY</span></td><td class="td-dim">Unknown</td><td class="td-warn">Ritual</td><td><button class="nn-btn ritual-button nn-btn-xs" style="font-size:.58rem;padding:.25em .7em">Enter</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Side Nav + Breadcrumb -->
+    <div class="nn-grid-2 nn-grid mb-6">
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Side Navigation</div>
+        <div class="nn-sidenav">
+          <a href="#" class="active">◉ District Overview <span class="nn-badge badge-primary nn-btn-xs">3</span></a>
+          <a href="#">◈ Sector Map</a>
+          <a href="#">⚠ Active Threats <span class="nn-badge badge-danger badge-dot nn-btn-xs">7</span></a>
+          <a href="#">⛩ Shrine Division</a>
+          <a href="#">👁 Surveillance Feed</a>
+          <a href="#">◼ Void Access <span class="nn-badge badge-ghost nn-btn-xs">LOCKED</span></a>
+        </div>
+      </div>
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Breadcrumb + Search</div>
+        <div class="nn-breadcrumb mb-4">
+          <a href="#">Home</a><span>›</span>
+          <a href="#">Tokyo 2099</a><span>›</span>
+          <a href="#">Sector 9</a><span>›</span>
+          <span class="bc-active">Breach Report</span>
+        </div>
+        <div class="nn-search">
+          <input type="text" class="nn-input" placeholder="Search districts, sectors, entities...">
+        </div>
+        <div class="nn-flex-wrap mt-3">
+          <span class="nn-small" style="color:var(--nn-text-ghost)">Recent:</span>
+          <span class="nn-badge badge-ghost" style="cursor:crosshair">Sector 9</span>
+          <span class="nn-badge badge-ghost" style="cursor:crosshair">KANEDA_07</span>
+          <span class="nn-badge badge-ghost" style="cursor:crosshair">Class-S</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forms + Progress -->
+    <div class="nn-grid-2 nn-grid mb-6">
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Forms // フォーム</div>
+        <div class="nn-flex-col">
+          <div class="nn-input-group"><label class="nn-input-label">Operator ID</label><input type="text" class="nn-input" placeholder="Enter designation..."><span class="nn-input-hint">District clearance level 3+ required</span></div>
+          <div class="nn-input-group"><label class="nn-input-label">Access Code</label><input type="password" class="nn-input" placeholder="••••••••"><span class="nn-input-error">⚠ Invalid code — 2 attempts remaining</span></div>
+          <div class="nn-input-group"><label class="nn-input-label">Threat Level</label>
+            <select class="nn-input nn-select">
+              <option>Select classification...</option>
+              <option>Level 1 — Passive</option>
+              <option>Level 3 — Elevated</option>
+              <option>Level 5 — Critical</option>
+              <option>Level 7 — Ghoul Event</option>
+            </select>
+          </div>
+          <div class="nn-input-group"><label class="nn-input-label">Report</label><textarea class="nn-input nn-textarea" placeholder="Describe the incident in detail..."></textarea></div>
+          <div class="nn-flex-col" style="gap:.5rem">
+            <div class="nn-checkbox-group"><input type="checkbox" class="nn-checkbox" id="chk1"><label for="chk1" class="nn-small" style="color:var(--nn-text-dim);cursor:crosshair">Confirm under penalty of death</label></div>
+            <div class="nn-checkbox-group"><input type="radio" class="nn-radio" name="priority" id="r1"><label for="r1" class="nn-small" style="color:var(--nn-text-dim);cursor:crosshair">Priority: Standard</label></div>
+            <div class="nn-checkbox-group"><input type="radio" class="nn-radio" name="priority" id="r2"><label for="r2" class="nn-small" style="color:var(--nn-text-dim);cursor:crosshair">Priority: Critical</label></div>
+          </div>
+          <button class="nn-btn neon-button nn-btn-sm" style="align-self:flex-start">Submit Report</button>
+        </div>
+      </div>
+      <div class="nn-card cyber-card">
+        <div class="nn-label neon-glow mb-3">Progress & Loaders</div>
+        <div class="nn-flex-col">
+          <div><div class="nn-progress-label"><span>Neural Stability</span><span>87%</span></div><div class="nn-progress"><div class="nn-progress-fill" style="width:87%"></div></div></div>
+          <div><div class="nn-progress-label"><span>Ghoul Containment</span><span>52%</span></div><div class="nn-progress progress-accent"><div class="nn-progress-fill" style="width:52%"></div></div></div>
+          <div><div class="nn-progress-label"><span>Sector Breach</span><span>97%</span></div><div class="nn-progress progress-danger"><div class="nn-progress-fill" style="width:97%"></div></div></div>
+          <div><div class="nn-progress-label"><span>Ritual Completion</span><span>31%</span></div><div class="nn-progress progress-warn"><div class="nn-progress-fill" style="width:31%"></div></div></div>
+          <div><div class="nn-progress-label"><span>Evacuation</span><span>44%</span></div><div class="nn-progress progress-safe"><div class="nn-progress-fill" style="width:44%"></div></div></div>
+          <div class="nn-progress nn-progress-lg" style="margin-top:.5rem"><div class="nn-progress-fill" style="width:60%"></div></div>
+          <div class="nn-loading-bar"></div>
+          <div class="nn-label" style="color:var(--nn-text-ghost);font-size:.6rem">Loading district data...</div>
+          <!-- Skeletons -->
+          <div class="nn-skeleton" style="height:12px;width:80%"></div>
+          <div class="nn-skeleton" style="height:12px;width:60%"></div>
+          <!-- Spinners -->
+          <div class="nn-flex" style="gap:1rem;margin-top:.5rem">
+            <div class="nn-spinner"></div>
+            <div class="nn-spinner nn-spinner-sm" style="border-top-color:var(--nn-neon-accent)"></div>
+            <div class="nn-spinner nn-spinner-xs" style="border-top-color:var(--nn-neon-danger)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     ATMOSPHERE
+     ════════════════════════════════════════════════ -->
+<section class="nn-section" id="section-atmosphere" style="border-top:1px solid var(--nn-border-dim)">
+  <div class="nn-container">
+    <div class="section-eyebrow">Atmospheric Systems</div>
+    <h2 class="nn-display nn-h2 neon-glow mb-2">環境システム // Environment</h2>
+    <p class="mb-6" style="color:var(--nn-text-dim);max-width:500px">JS-powered systems. Each independently toggleable. Designed to layer over any page without affecting layout.</p>
+
+    <div class="nn-grid-2 nn-grid mb-6">
+      <div class="nn-card cyber-card">
+        <div class="nn-flex-between mb-4"><div><div class="nn-label neon-glow mb-1">Rain Engine // 雨</div><p class="nn-small" style="color:var(--nn-text-dim)">Canvas particle system. Neon reflections. Per-drop physics with wind angle.</p></div><span class="nn-badge badge-safe badge-dot" id="rain-status">ACTIVE</span></div>
+        <div class="nn-flex-col">
+          <div class="nn-input-group"><label class="nn-input-label">Intensity</label><input type="range" id="rain-intensity" min="50" max="500" value="180" style="width:100%"></div>
+          <div class="nn-input-group"><label class="nn-input-label">Speed</label><input type="range" id="rain-speed" min="3" max="28" value="13" style="width:100%"></div>
+          <div class="nn-input-group"><label class="nn-input-label">Wind Angle</label><input type="range" id="rain-angle" min="-35" max="35" value="0" style="width:100%"></div>
+          <div class="nn-flex-wrap">
+            <button class="nn-btn neon-button nn-btn-sm" onclick="toggleRain()">Toggle</button>
+            <button class="nn-btn ghost-button nn-btn-sm" onclick="setRainColor('#00eaff')">Cyan</button>
+            <button class="nn-btn ghost-button nn-btn-sm" onclick="setRainColor('#ff2d78')">Pink</button>
+            <button class="nn-btn ghost-button nn-btn-sm" onclick="setRainColor('#ffffff')">White</button>
+            <button class="nn-btn ghost-button nn-btn-sm" onclick="setRainColor('#cc0018')">Blood</button>
+          </div>
+        </div>
+      </div>
+      <div class="nn-card cyber-card horror-bleed">
+        <div class="nn-flex-between mb-4"><div><div class="nn-label" style="color:var(--nn-neon-danger)">⚠ Infestation Engine // 感染</div><p class="nn-small" style="color:var(--nn-text-dim)">Organic vein spread via canvas Bezier. Corruption patches. Toggleable overlay.</p></div><span class="nn-badge badge-warn badge-dot" id="infest-status">DORMANT</span></div>
+        <div class="nn-flex-col">
+          <div class="nn-input-group"><label class="nn-input-label">Spread Rate</label><input type="range" id="infest-rate" min="1" max="10" value="5" style="width:100%;accent-color:var(--nn-neon-danger)"></div>
+          <div class="nn-input-group"><label class="nn-input-label">Glitch Frequency</label><input type="range" id="glitch-freq" min="1" max="10" value="3" style="width:100%;accent-color:var(--nn-neon-accent)"></div>
+          <div class="nn-flex-wrap">
+            <button class="nn-btn danger-button nn-btn-sm" onclick="toggleInfestation()">👁 Activate</button>
+            <button class="nn-btn ghost-button nn-btn-sm" onclick="triggerGlitchBurst()">Glitch Burst</button>
+            <button class="nn-btn danger-button nn-btn-sm flicker" onclick="triggerMassGlitch()">☠ MASS EVENT</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture diagram -->
+    <div class="labeled-sep"><span>Framework Architecture</span></div>
+    <div class="nn-grid-5 nn-grid">
+      <div class="nn-card ghost-card" style="text-align:center;padding:1.5rem .75rem"><div class="nn-display neon-glow mb-2" style="font-size:1.3rem">◉</div><div class="nn-label mb-1">core/</div><div class="nn-micro" style="color:var(--nn-text-ghost)">base · vars<br>layout · typo</div></div>
+      <div class="nn-card ghost-card" style="text-align:center;padding:1.5rem .75rem"><div class="nn-display neon-glow-accent mb-2" style="font-size:1.3rem">◈</div><div class="nn-label mb-1">components/</div><div class="nn-micro" style="color:var(--nn-text-ghost)">buttons · cards<br>panels · forms<br>tabs · timeline</div></div>
+      <div class="nn-card ghost-card" style="text-align:center;padding:1.5rem .75rem"><div class="nn-display neon-glow-danger mb-2" style="font-size:1.3rem">⚡</div><div class="nn-label mb-1">effects/</div><div class="nn-micro" style="color:var(--nn-text-ghost)">neon · glitch<br>holo · noise<br>shimmer · drip</div></div>
+      <div class="nn-card ghost-card" style="text-align:center;padding:1.5rem .75rem"><div class="nn-zen mb-2" style="font-size:1.8rem;color:var(--nn-neon-warn);text-shadow:var(--nn-glow-warn)">雨</div><div class="nn-label mb-1">atmosphere/</div><div class="nn-micro" style="color:var(--nn-text-ghost)">rain · infest<br>city-bg · fog<br>glitch-engine</div></div>
+      <div class="nn-card ghost-card" style="text-align:center;padding:1.5rem .75rem"><div class="nn-zen mb-2" style="font-size:1.8rem;color:var(--nn-neon-purple);text-shadow:var(--nn-glow-purple)">区</div><div class="nn-label mb-1">districts/</div><div class="nn-micro" style="color:var(--nn-text-ghost)">tokyo · ghoul<br>ritual · void<br>+ CSS vars</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     JP ATMOSPHERE STRIP
+     ════════════════════════════════════════════════ -->
+<section style="padding:4rem 0;background:var(--nn-abyss);border-top:1px solid var(--nn-border-dim);border-bottom:1px solid var(--nn-border-dim);position:relative;z-index:3;overflow:hidden">
+  <div class="nn-container">
+    <!-- Giant decorative kanji -->
+    <div style="display:flex;justify-content:space-around;align-items:center;margin-bottom:3rem;user-select:none;pointer-events:none">
+      <span style="font-family:var(--nn-font-jp);font-weight:900;font-size:clamp(3rem,8vw,7rem);color:var(--nn-neon-primary);opacity:.07">東</span>
+      <span style="font-family:var(--nn-font-jp);font-weight:900;font-size:clamp(3rem,8vw,7rem);color:var(--nn-neon-accent);opacity:.07">京</span>
+      <span style="font-family:var(--nn-font-jp);font-weight:900;font-size:clamp(3rem,8vw,7rem);color:var(--nn-neon-danger);opacity:.07">滅</span>
+      <span style="font-family:var(--nn-font-jp);font-weight:900;font-size:clamp(3rem,8vw,7rem);color:var(--nn-neon-warn);opacity:.07">亡</span>
+      <span style="font-family:var(--nn-font-jp);font-weight:900;font-size:clamp(3rem,8vw,7rem);color:var(--nn-neon-primary);opacity:.07">都</span>
+      <span style="font-family:var(--nn-font-jp);font-weight:900;font-size:clamp(3rem,8vw,7rem);color:var(--nn-neon-purple);opacity:.07">市</span>
+    </div>
+    <!-- Vertical text rows -->
+    <div style="display:flex;gap:2.5rem;align-items:flex-start;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem">
+      <div class="vtext-jp" style="font-size:.7rem;letter-spacing:.3em;color:var(--nn-text-ghost);height:150px;opacity:.55;animation:nn-flicker-mild 6s infinite">この都市は</div>
+      <div class="vtext-jp" style="font-size:.7rem;letter-spacing:.3em;color:var(--nn-neon-danger);height:150px;opacity:.35;animation:nn-flicker 8s infinite 1s">もう死んでいる</div>
+      <div class="vtext-jp" style="font-size:.7rem;letter-spacing:.3em;color:var(--nn-text-ghost);height:150px;opacity:.45;animation:nn-flicker-mild 5s infinite 2s">走れ逃げろ</div>
+      <div class="vtext-jp" style="font-size:.7rem;letter-spacing:.3em;color:var(--nn-neon-primary);height:150px;opacity:.3;animation:nn-flicker 7s infinite">生き残れ</div>
+      <div class="vtext-jp" style="font-size:.7rem;letter-spacing:.3em;color:var(--nn-text-ghost);height:150px;opacity:.45;animation:nn-flicker-mild 9s infinite .5s">感染は広がる</div>
+      <div class="vtext-jp" style="font-size:.7rem;letter-spacing:.3em;color:var(--nn-neon-accent);height:150px;opacity:.35;animation:nn-flicker 6s infinite 3s">呪い</div>
+      <div class="vtext-jp" style="font-size:.7rem;letter-spacing:.3em;color:var(--nn-text-ghost);height:150px;opacity:.5;animation:nn-flicker-mild 4s infinite">夜の都市</div>
+      <div class="vtext-jp" style="font-size:.7rem;letter-spacing:.3em;color:var(--nn-neon-warn);height:150px;opacity:.25;animation:nn-flicker 10s infinite 2s">儀式は続く</div>
+    </div>
+    <!-- Ticker -->
+    <div style="overflow:hidden;border-top:1px solid var(--nn-border-dim);padding-top:1rem">
+      <div id="news-ticker" style="display:flex;gap:3rem;white-space:nowrap;font-family:var(--nn-font-mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--nn-text-dim)">
+        <span>東京2099 // 感染拡大 // SECTOR 9 BREACH // 第7区封鎖 // EVACUATION ORDER // 危険 // GHOUL SIGHTING // 立入禁止 // RITUAL WARD ACTIVE // 呪われた都市 // NECRO-NEON FRAMEWORK v3.0 // 生き残れ // RUN // FLEE // SURVIVE // 鬼を倒せ //</span>
+        <span>東京2099 // 感染拡大 // SECTOR 9 BREACH // 第7区封鎖 // EVACUATION ORDER // 危険 // GHOUL SIGHTING // 立入禁止 // RITUAL WARD ACTIVE // 呪われた都市 // NECRO-NEON FRAMEWORK v3.0 // 生き残れ // RUN // FLEE // SURVIVE // 鬼を倒せ //</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     FOOTER
+     ════════════════════════════════════════════════ -->
+<footer class="nn-footer">
+  <div class="nn-container">
+    <div class="nn-display neon-glow mb-2" style="font-size:1.5rem">NECRO-NEON</div>
+    <div class="nn-mono nn-small mb-2" style="color:var(--nn-text-dim)">呪われたネオン都市のためのフレームワーク // v3.0.0</div>
+    <div class="nn-zen mb-3" style="font-size:1rem;color:var(--nn-neon-danger);opacity:.5;animation:nn-flicker 6s infinite">走れ。逃げろ。生き残れ。</div>
+    <div class="nn-flex-wrap" style="justify-content:center;gap:.5rem;margin-bottom:2rem">
+      <span class="nn-badge badge-primary">55+ Components</span>
+      <span class="nn-badge badge-accent">25 Effects</span>
+      <span class="nn-badge badge-danger badge-dot">Infestation</span>
+      <span class="nn-badge badge-warn">4 Districts</span>
+      <span class="nn-badge badge-ghost">CSS Variables</span>
+      <span class="nn-badge badge-purple">Toggleable Backdrops</span>
+    </div>
+    <p class="nn-micro" style="color:var(--nn-text-ghost)">Game landing pages · ARG projects · Dark portfolios · Experimental web art · Horror sites · Cyberpunk UIs</p>
+  </div>
+</footer>
+
+<style>
+@keyframes nn-ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+#news-ticker { animation:nn-ticker 40s linear infinite }
+</style>
+
+<script src="necro-neon/necro-neon.js"></script>
+</body>
+</html>

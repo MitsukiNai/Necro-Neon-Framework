@@ -1,0 +1,20 @@
+{
+  "name": "necro-neon",
+  "version": "3.0.0",
+  "description": "呪われたネオン都市 — Cyberpunk UI Framework. Production-grade TypeScript web components.",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src/**/*.ts",
+    "test": "jest"
+  },
+  "keywords": ["cyberpunk", "neon", "ui", "framework", "web-components", "typescript"],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

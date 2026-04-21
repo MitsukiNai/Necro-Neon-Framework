@@ -1,0 +1,859 @@
+
+/* ================================================================
+   NECRO-NEON FRAMEWORK v3.0
+   呪われたネオン都市 — Infestation Edition
+   ================================================================
+
+   [1]  CSS Variables & Districts
+   [2]  Core Reset
+   [3]  Typography
+   [4]  Layout
+   [5]  Effects  (neon · glitch · hologram · scanlines · flicker ·
+                  noise · corrupt · horror-bleed · distort · drip ·
+                  vein · neon-sign · pulse · shimmer · pixel-fade)
+   [6]  Buttons  (9 variants + sizes + combos)
+   [7]  Cards    (6 variants)
+   [8]  Panels   (terminal · glitch-window · shrine-panel)
+   [9]  Nav      (navbar · breadcrumb · district-switcher)
+   [10] Badges & Tags
+   [11] Banners
+   [12] Kanji Signs & Street UI
+   [13] Progress & Data
+   [14] Forms
+   [15] Tabs
+   [16] Accordion
+   [17] Timeline
+   [18] Table
+   [19] Avatar & Profile card
+   [20] Modal & Ritual Dialog
+   [21] Toast / Notification
+   [22] Tooltip
+   [23] Loader / Spinner
+   [24] City Backdrop System    ← toggleable via .city-backdrop--on/off
+   [25] Atmospheric layer CSS
+   [26] Showcase page styles
+   ================================================================ */
+
+/* ─────────────────────────────────────────────────
+   [1] CSS VARIABLES — Districts
+   ─────────────────────────────────────────────────
+   Usage:  <html data-district="ghoul">
+           or  <section data-district="ritual">
+   ───────────────────────────────────────────────── */
+:root,
+[data-district="tokyo-night"] {
+  --nn-void:          #020408;
+  --nn-abyss:         #040b12;
+  --nn-deep:          #060d16;
+  --nn-surface:       #0a1520;
+  --nn-panel:         #0d1e2e;
+  --nn-panel-alt:     #091824;
+  --nn-glass:         rgba(10,21,32,0.80);
+  --nn-glass-light:   rgba(0,234,255,0.04);
+
+  --nn-neon-primary:  #00eaff;
+  --nn-neon-accent:   #ff2d78;
+  --nn-neon-warn:     #ffd700;
+  --nn-neon-danger:   #cc0018;
+  --nn-neon-safe:     #00ff88;
+  --nn-neon-purple:   #9d00ff;
+  --nn-neon-orange:   #ff6600;
+  --nn-neon-lime:     #aaff00;
+
+  --nn-text-primary:  #c8d8e0;
+  --nn-text-dim:      #4a6070;
+  --nn-text-ghost:    #1e2d38;
+  --nn-text-bright:   #e8f4f8;
+
+  --nn-border:        rgba(0,234,255,0.18);
+  --nn-border-dim:    rgba(0,234,255,0.07);
+  --nn-border-hot:    rgba(0,234,255,0.55);
+
+  --nn-glow-primary:  0 0 5px #00eaff,0 0 18px rgba(0,234,255,.5),0 0 45px rgba(0,234,255,.2);
+  --nn-glow-accent:   0 0 5px #ff2d78,0 0 18px rgba(255,45,120,.5),0 0 45px rgba(255,45,120,.2);
+  --nn-glow-danger:   0 0 5px #cc0018,0 0 22px rgba(204,0,24,.6),0 0 55px rgba(204,0,24,.25);
+  --nn-glow-warn:     0 0 5px #ffd700,0 0 18px rgba(255,215,0,.5),0 0 40px rgba(255,215,0,.2);
+  --nn-glow-safe:     0 0 5px #00ff88,0 0 15px rgba(0,255,136,.4),0 0 30px rgba(0,255,136,.15);
+  --nn-glow-purple:   0 0 5px #9d00ff,0 0 18px rgba(157,0,255,.5),0 0 45px rgba(157,0,255,.2);
+
+  --nn-box-primary:   0 0 12px rgba(0,234,255,.4),0 0 35px rgba(0,234,255,.12),inset 0 0 12px rgba(0,234,255,.04);
+  --nn-box-accent:    0 0 12px rgba(255,45,120,.4),0 0 35px rgba(255,45,120,.12),inset 0 0 12px rgba(255,45,120,.04);
+  --nn-box-danger:    0 0 15px rgba(204,0,24,.5),0 0 40px rgba(204,0,24,.15),inset 0 0 15px rgba(204,0,24,.06);
+  --nn-box-warn:      0 0 12px rgba(255,215,0,.4),0 0 35px rgba(255,215,0,.12),inset 0 0 12px rgba(255,215,0,.04);
+  --nn-box-safe:      0 0 10px rgba(0,255,136,.35),0 0 30px rgba(0,255,136,.1),inset 0 0 10px rgba(0,255,136,.04);
+  --nn-box-purple:    0 0 12px rgba(157,0,255,.4),0 0 35px rgba(157,0,255,.12),inset 0 0 12px rgba(157,0,255,.04);
+
+  --nn-font-display:  'Orbitron', monospace;
+  --nn-font-mono:     'Share Tech Mono', monospace;
+  --nn-font-jp:       'Noto Sans JP', sans-serif;
+  --nn-font-jp-serif: 'Noto Serif JP', serif;
+  --nn-font-ritual:   'Cinzel Decorative', serif;
+  --nn-font-zen:      'Zen Kurenaido', cursive;
+
+  --nn-scanline: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px);
+
+  --nn-clip-sm:     polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+  --nn-clip-corner: polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,0 100%);
+  --nn-clip-both:   polygon(22px 0,100% 0,100% calc(100% - 22px),calc(100% - 22px) 100%,0 100%,0 22px);
+
+  --nn-speed-glitch:  0.1s;
+  --nn-speed-flicker: 3.5s;
+
+  /* City variables — used by canvas JS */
+  --city-sky:   #000810;
+  --city-mid:   #000d18;
+  --city-glow:  rgba(0,234,255,0.14);
+}
+
+[data-district="ghoul"] {
+  --nn-void:#040105; --nn-abyss:#070009; --nn-surface:#0e0510; --nn-panel:#150a18;
+  --nn-glass:rgba(14,5,16,.85); --nn-glass-light:rgba(139,0,255,.04);
+  --nn-neon-primary:#9d00ff; --nn-neon-accent:#ff2d78; --nn-neon-warn:#cc0018;
+  --nn-border:rgba(139,0,255,.22); --nn-border-dim:rgba(139,0,255,.08); --nn-border-hot:rgba(139,0,255,.55);
+  --nn-glow-primary:  0 0 5px #9d00ff,0 0 20px rgba(157,0,255,.55),0 0 50px rgba(157,0,255,.2);
+  --nn-box-primary:   0 0 12px rgba(157,0,255,.45),0 0 35px rgba(157,0,255,.12),inset 0 0 12px rgba(157,0,255,.04);
+  --city-sky:#060003; --city-mid:#0a0008; --city-glow:rgba(157,0,255,0.15);
+}
+[data-district="ritual"] {
+  --nn-void:#05030a; --nn-abyss:#0a0612; --nn-surface:#110a08; --nn-panel:#1a0f0c;
+  --nn-glass:rgba(17,10,8,.88); --nn-glass-light:rgba(255,215,0,.03);
+  --nn-neon-primary:#ffd700; --nn-neon-accent:#cc0018; --nn-neon-warn:#ff8c00;
+  --nn-border:rgba(255,215,0,.15); --nn-border-dim:rgba(255,215,0,.06); --nn-border-hot:rgba(255,215,0,.45);
+  --nn-glow-primary:  0 0 5px #ffd700,0 0 18px rgba(255,215,0,.5),0 0 45px rgba(255,215,0,.18);
+  --nn-box-primary:   0 0 12px rgba(255,215,0,.38),0 0 35px rgba(255,215,0,.1),inset 0 0 12px rgba(255,215,0,.04);
+  --city-sky:#050203; --city-mid:#090405; --city-glow:rgba(255,215,0,0.1);
+}
+[data-district="void"] {
+  --nn-void:#000; --nn-abyss:#030303; --nn-surface:#060606; --nn-panel:#0a0a0a;
+  --nn-neon-primary:#1a1a1a; --nn-neon-accent:#ff2d78; --nn-neon-warn:#222;
+  --nn-border:rgba(255,45,120,.12); --nn-border-dim:rgba(255,45,120,.05);
+  --nn-glow-primary:0 0 3px rgba(255,45,120,.3),0 0 10px rgba(255,45,120,.12);
+  --nn-box-primary:0 0 8px rgba(255,45,120,.25),0 0 20px rgba(255,45,120,.08);
+  --city-sky:#000; --city-mid:#020002; --city-glow:rgba(255,45,120,0.06);
+}
+
+/* ─────────────────────────────────────────────────
+   [2] CORE RESET
+   ───────────────────────────────────────────────── */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+html { scroll-behavior:smooth; font-size:16px }
+body { background:var(--nn-void); color:var(--nn-text-primary);
+       font-family:var(--nn-font-jp); font-weight:300; line-height:1.75;
+       overflow-x:hidden; cursor:crosshair; min-height:100vh }
+a,button,[role="button"] { cursor:crosshair }
+::-webkit-scrollbar { width:3px; background:var(--nn-void) }
+::-webkit-scrollbar-thumb { background:var(--nn-neon-primary); box-shadow:var(--nn-glow-primary) }
+::selection { background:rgba(0,234,255,.22); color:#fff }
+img, canvas { max-width:100%; display:block }
+
+/* ─────────────────────────────────────────────────
+   [3] TYPOGRAPHY
+   ───────────────────────────────────────────────── */
+.nn-display  { font-family:var(--nn-font-display); font-weight:900; letter-spacing:.08em; text-transform:uppercase }
+.nn-mono     { font-family:var(--nn-font-mono) }
+.nn-ritual   { font-family:var(--nn-font-ritual) }
+.nn-serif-jp { font-family:var(--nn-font-jp-serif) }
+.nn-zen      { font-family:var(--nn-font-zen) }
+
+.nn-h1 { font-size:clamp(2.5rem,6vw,5.5rem); line-height:1.0; letter-spacing:-.02em }
+.nn-h2 { font-size:clamp(1.8rem,3.5vw,3rem);  line-height:1.1 }
+.nn-h3 { font-size:clamp(1.2rem,2vw,1.8rem);  line-height:1.2 }
+.nn-h4 { font-size:clamp(.95rem,1.5vw,1.2rem); letter-spacing:.1em; text-transform:uppercase }
+
+.nn-body   { font-size:.95rem; line-height:1.75 }
+.nn-small  { font-size:.78rem; letter-spacing:.03em }
+.nn-micro  { font-size:.62rem; letter-spacing:.15em; text-transform:uppercase }
+.nn-label  { font-family:var(--nn-font-mono); font-size:.68rem; letter-spacing:.14em; text-transform:uppercase }
+.nn-code   { font-family:var(--nn-font-mono); font-size:.82rem; background:var(--nn-abyss); padding:.1em .4em; border:1px solid var(--nn-border-dim) }
+
+/* Neon text colours */
+.neon-glow        { color:var(--nn-neon-primary);  text-shadow:var(--nn-glow-primary) }
+.neon-glow-accent { color:var(--nn-neon-accent);   text-shadow:var(--nn-glow-accent) }
+.neon-glow-danger { color:var(--nn-neon-danger);   text-shadow:var(--nn-glow-danger) }
+.neon-glow-warn   { color:var(--nn-neon-warn);     text-shadow:var(--nn-glow-warn) }
+.neon-glow-safe   { color:var(--nn-neon-safe);     text-shadow:var(--nn-glow-safe) }
+.neon-glow-purple { color:var(--nn-neon-purple);   text-shadow:var(--nn-glow-purple) }
+
+/* Neon box shadows */
+.neon-box         { box-shadow:var(--nn-box-primary); border-color:var(--nn-neon-primary) }
+.neon-box-accent  { box-shadow:var(--nn-box-accent);  border-color:var(--nn-neon-accent) }
+.neon-box-danger  { box-shadow:var(--nn-box-danger);  border-color:var(--nn-neon-danger) }
+.neon-box-warn    { box-shadow:var(--nn-box-warn);    border-color:var(--nn-neon-warn) }
+.neon-box-safe    { box-shadow:var(--nn-box-safe);    border-color:var(--nn-neon-safe) }
+
+/* ─────────────────────────────────────────────────
+   [4] LAYOUT
+   ───────────────────────────────────────────────── */
+.nn-container    { max-width:1380px; margin:0 auto; padding:0 2.5rem }
+.nn-container-sm { max-width:900px;  margin:0 auto; padding:0 2rem }
+.nn-section      { padding:6rem 0; position:relative; z-index:3 }
+.nn-section-sm   { padding:3rem 0; position:relative; z-index:3 }
+
+.nn-grid   { display:grid; gap:1.5rem }
+.nn-grid-2 { grid-template-columns:repeat(auto-fit,minmax(360px,1fr)) }
+.nn-grid-3 { grid-template-columns:repeat(auto-fit,minmax(270px,1fr)) }
+.nn-grid-4 { grid-template-columns:repeat(auto-fit,minmax(210px,1fr)) }
+.nn-grid-5 { grid-template-columns:repeat(auto-fit,minmax(170px,1fr)) }
+.nn-grid-6 { grid-template-columns:repeat(auto-fit,minmax(140px,1fr)) }
+
+.nn-flex         { display:flex; align-items:center; gap:1rem }
+.nn-flex-col     { display:flex; flex-direction:column; gap:1rem }
+.nn-flex-wrap    { display:flex; flex-wrap:wrap; gap:.75rem; align-items:center }
+.nn-flex-between { display:flex; align-items:center; justify-content:space-between; gap:1rem }
+.nn-flex-center  { display:flex; align-items:center; justify-content:center }
+
+.nn-text-center { text-align:center }
+.nn-text-right  { text-align:right }
+
+/* Spacing utilities */
+.mb-0{margin-bottom:0} .mb-1{margin-bottom:.5rem} .mb-2{margin-bottom:1rem}
+.mb-3{margin-bottom:1.5rem} .mb-4{margin-bottom:2rem} .mb-6{margin-bottom:3rem}
+.mt-1{margin-top:.5rem}   .mt-2{margin-top:1rem}   .mt-4{margin-top:2rem} .mt-6{margin-top:3rem}
+.p-2{padding:1rem} .p-3{padding:1.5rem} .p-4{padding:2rem}
+
+/* Dividers */
+.nn-divider        { height:1px; border:none; margin:2.5rem 0; opacity:.35;
+                     background:linear-gradient(90deg,transparent,var(--nn-neon-primary),transparent);
+                     box-shadow:var(--nn-glow-primary) }
+.nn-divider-accent { background:linear-gradient(90deg,transparent,var(--nn-neon-accent),transparent) }
+.nn-divider-danger { background:linear-gradient(90deg,transparent,var(--nn-neon-danger),transparent) }
+
+/* ─────────────────────────────────────────────────
+   [5] EFFECTS LIBRARY
+   ───────────────────────────────────────────────── */
+
+/* ·· 5a  GLITCH ·· */
+@keyframes nn-glitch-skew {
+  0%,100%  { transform:skewX(0);      opacity:1   }
+  7%       { transform:skewX(-2deg)              }
+  8%       { transform:skewX(2deg)               }
+  9%       { transform:skewX(0);      opacity:.9  }
+  43%      { transform:skewX(0)                  }
+  44%      { transform:skewX(1.5deg); opacity:.95 }
+  45%      { transform:skewX(-1.5deg)            }
+  46%      { transform:skewX(0)                  }
+}
+@keyframes nn-g1 {
+  0%,100% { clip-path:inset(0 0 98% 0);   transform:translateX(0)   }
+  5%      { clip-path:inset(20% 0 60% 0); transform:translateX(-6px) }
+  15%     { clip-path:inset(65% 0 10% 0); transform:translateX(5px)  }
+  30%     { clip-path:inset(40% 0 35% 0); transform:translateX(-3px) }
+  50%     { clip-path:inset(85% 0 5%  0); transform:translateX(4px)  }
+  75%     { clip-path:inset(10% 0 80% 0); transform:translateX(-5px) }
+}
+@keyframes nn-g2 {
+  0%,100% { clip-path:inset(95% 0 0 0);   transform:translateX(0)   }
+  10%     { clip-path:inset(50% 0 30% 0); transform:translateX(7px)  }
+  25%     { clip-path:inset(15% 0 70% 0); transform:translateX(-4px) }
+  60%     { clip-path:inset(75% 0 15% 0); transform:translateX(3px)  }
+  85%     { clip-path:inset(30% 0 55% 0); transform:translateX(-7px) }
+}
+@keyframes nn-rgb {
+  0%,100% { text-shadow:-3px 0 var(--nn-neon-accent),3px 0 var(--nn-neon-primary) }
+  33%     { text-shadow: 3px 0 var(--nn-neon-danger),-3px 0 var(--nn-neon-primary) }
+  66%     { text-shadow:-4px 0 var(--nn-neon-accent), 4px 0 #00ff88                }
+}
+
+.glitch       { position:relative; display:inline-block; animation:nn-glitch-skew 4s infinite }
+.glitch::before,.glitch::after {
+  content:attr(data-text); position:absolute; top:0; left:0; width:100%; height:100%;
+  background:var(--nn-void);
+}
+.glitch::before { color:var(--nn-neon-accent); left:-2px; animation:nn-g1 var(--nn-speed-glitch) steps(1) infinite }
+.glitch::after  { color:var(--nn-neon-primary); left:2px;  animation:nn-g2 calc(var(--nn-speed-glitch)*1.4) steps(1) infinite }
+
+.glitch-text  { animation:nn-rgb 2s infinite }
+.glitch-mild  { position:relative; display:inline-block }
+.glitch-mild::before {
+  content:attr(data-text); position:absolute; top:0; left:2px;
+  color:var(--nn-neon-accent); opacity:.4; clip-path:inset(30% 0 40% 0);
+  animation:nn-g1 5s steps(1) infinite
+}
+
+/* ·· 5b  CORRUPTION ·· */
+@keyframes nn-corrupt {
+  0%,90%,100% { transform:translate(0); filter:none }
+  91% { transform:translate(-3px,1px);  filter:hue-rotate(20deg)   }
+  92% { transform:translate(3px,-2px);  filter:hue-rotate(-20deg)  }
+  93% { transform:translate(-2px,2px);  filter:saturate(3)         }
+  94% { transform:translate(0);         filter:none                 }
+  95% { transform:translate(2px,-1px);  filter:hue-rotate(30deg)   }
+  96% { transform:translate(0);         filter:none                 }
+}
+.corrupted { animation:nn-corrupt 4s infinite }
+
+/* ·· 5c  HOLOGRAM ·· */
+@keyframes nn-holo-flicker { 0%,88%,100%{opacity:1} 89%{opacity:.65} 90%{opacity:1} 94%{opacity:.8} 95%{opacity:1} }
+@keyframes nn-holo-scan    { 0%{background-position:0% -100%} 100%{background-position:0% 200%} }
+
+.hologram {
+  position:relative; overflow:hidden;
+  background:var(--nn-glass); border:1px solid var(--nn-neon-primary);
+  box-shadow:var(--nn-box-primary);
+  animation:nn-holo-flicker var(--nn-speed-flicker) infinite;
+  backdrop-filter:blur(6px);
+}
+.hologram::before {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:linear-gradient(180deg,transparent 0%,rgba(0,234,255,.05) 50%,transparent 100%);
+  background-size:100% 60px;
+  animation:nn-holo-scan 3s linear infinite;
+}
+.hologram > * { position:relative; z-index:1 }
+
+/* ·· 5d  SCANLINES ·· */
+.scanlines { position:relative; overflow:hidden }
+.scanlines::after {
+  content:''; position:absolute; inset:0;
+  background:var(--nn-scanline); pointer-events:none; z-index:20; opacity:.45
+}
+
+/* ·· 5e  FLICKER ·· */
+@keyframes nn-flicker      { 0%,17%,19%,22%,24%,54%,57%,100%{opacity:1} 18%,23%,55%,56%{opacity:.2} }
+@keyframes nn-flicker-mild { 0%,45%,47%,100%{opacity:1} 46%{opacity:.65} }
+@keyframes nn-pulse        { 0%,100%{box-shadow:var(--nn-box-primary)} 50%{box-shadow:0 0 25px var(--nn-neon-primary),0 0 70px rgba(0,234,255,.25)} }
+@keyframes nn-neon-sign    { 0%,18%,20%,22%,24%,53%,56%,100%{opacity:1;text-shadow:var(--nn-glow-primary)} 19%,23%,54%,55%{opacity:.08;text-shadow:none} 21%{opacity:.5} }
+
+.flicker      { animation:nn-flicker var(--nn-speed-flicker) infinite }
+.flicker-mild { animation:nn-flicker-mild 5s infinite }
+.pulse-glow   { animation:nn-pulse 2s ease-in-out infinite }
+.neon-sign    { animation:nn-neon-sign 5s infinite }
+
+/* ·· 5f  DIGITAL NOISE ·· */
+@keyframes nn-noise {
+  0%   { transform:translate(0,0)     scale(1.06) }
+  20%  { transform:translate(2%,1.5%) scale(1.06) }
+  40%  { transform:translate(-2%,3%)  scale(1.06) }
+  60%  { transform:translate(2.5%,-2%)scale(1.06) }
+  80%  { transform:translate(1%,3%)   scale(1.06) }
+  100% { transform:translate(0,0)     scale(1.06) }
+}
+.digital-noise { position:relative; overflow:hidden }
+.digital-noise::after {
+  content:''; position:absolute; inset:-5%; pointer-events:none; z-index:15;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+  opacity:.18; mix-blend-mode:screen;
+  animation:nn-noise .35s steps(1) infinite;
+}
+
+/* ·· 5g  HORROR BLEED ·· */
+@keyframes nn-bleed {
+  0%,100% { box-shadow:inset 0 0 40px rgba(204,0,24,0),var(--nn-box-danger) }
+  50%     { box-shadow:inset 0 0 90px rgba(204,0,24,.14),var(--nn-box-danger) }
+}
+.horror-bleed { animation:nn-bleed 3s ease-in-out infinite; border-color:var(--nn-neon-danger) }
+
+/* ·· 5h  DISTORTION ·· */
+@keyframes nn-distort {
+  0%,100%{filter:none;transform:skewX(0)} 2%{filter:blur(.5px);transform:skewX(-.5deg)}
+  4%{filter:none;transform:skewX(.3deg)} 6%{filter:none;transform:skewX(0)}
+  52%{filter:blur(.3px);transform:skewX(.4deg)} 54%{filter:none;transform:skewX(0)}
+}
+.distorted { animation:nn-distort 6s infinite }
+
+/* ·· 5i  SHIMMER ·· */
+@keyframes nn-shimmer {
+  0%   { background-position:-200% center }
+  100% { background-position: 200% center }
+}
+.shimmer {
+  background:linear-gradient(90deg,var(--nn-neon-primary) 0%,rgba(255,255,255,.8) 40%,var(--nn-neon-primary) 100%);
+  background-size:200% auto; -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; animation:nn-shimmer 3s linear infinite;
+}
+
+/* ·· 5j  PIXEL FADE (reveal) ·· */
+@keyframes nn-pixel-fade {
+  0%   { opacity:0; clip-path:inset(100% 0 0 0) }
+  100% { opacity:1; clip-path:inset(0% 0 0 0)   }
+}
+.pixel-fade { animation:nn-pixel-fade .8s steps(8) both }
+
+/* ·· 5k  VEIN / BLOOD DRIP ·· */
+@keyframes nn-drip {
+  0%   { height:0;    opacity:.8 }
+  70%  { height:28px; opacity:1  }
+  100% { height:28px; opacity:0  }
+}
+.blood-drip { position:relative }
+.blood-drip::after {
+  content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  width:2px; background:var(--nn-neon-danger); box-shadow:0 0 5px var(--nn-neon-danger);
+  animation:nn-drip 3s ease-in infinite;
+}
+
+/* ─────────────────────────────────────────────────
+   [6] BUTTONS
+   ─────────────────────────────────────────────────
+   Base:  .nn-btn
+   Variants: neon-button · accent-button · ghost-button ·
+             danger-button · solid-button · ritual-button ·
+             ghoul-button · void-button · icon-button
+   Sizes: nn-btn-xl · nn-btn-lg · nn-btn-sm · nn-btn-xs
+   Mods:  nn-btn-wide
+   ───────────────────────────────────────────────── */
+.nn-btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
+  padding:.6em 1.5em; font-family:var(--nn-font-display); font-size:.72rem;
+  font-weight:700; letter-spacing:.18em; text-transform:uppercase; text-decoration:none;
+  cursor:crosshair; position:relative; overflow:hidden;
+  transition:all .22s ease; user-select:none; white-space:nowrap; border:1px solid transparent;
+}
+.nn-btn:disabled { opacity:.3; cursor:not-allowed; pointer-events:none }
+.nn-btn-xl   { padding:.85em 2.4em; font-size:.9rem }
+.nn-btn-lg   { padding:.75em 2em;   font-size:.82rem }
+.nn-btn-sm   { padding:.4em 1em;    font-size:.65rem }
+.nn-btn-xs   { padding:.28em .75em; font-size:.58rem }
+.nn-btn-wide { width:100%; justify-content:center }
+
+.neon-button { background:transparent; color:var(--nn-neon-primary); border-color:var(--nn-neon-primary); box-shadow:var(--nn-box-primary); clip-path:var(--nn-clip-sm) }
+.neon-button:hover { background:rgba(0,234,255,.1); box-shadow:0 0 22px rgba(0,234,255,.6),0 0 60px rgba(0,234,255,.2),inset 0 0 20px rgba(0,234,255,.08); color:#fff; letter-spacing:.22em }
+
+.accent-button { background:transparent; color:var(--nn-neon-accent); border-color:var(--nn-neon-accent); box-shadow:var(--nn-box-accent); clip-path:var(--nn-clip-sm) }
+.accent-button:hover { background:rgba(255,45,120,.1); box-shadow:0 0 22px rgba(255,45,120,.6),0 0 60px rgba(255,45,120,.2); color:#fff }
+
+.ghost-button { background:transparent; color:var(--nn-text-dim); border-color:var(--nn-border-dim); clip-path:var(--nn-clip-sm) }
+.ghost-button:hover { color:var(--nn-neon-primary); border-color:var(--nn-neon-primary); box-shadow:var(--nn-box-primary) }
+
+.danger-button { background:rgba(204,0,24,.1); color:var(--nn-neon-danger); border-color:var(--nn-neon-danger); box-shadow:var(--nn-box-danger); clip-path:var(--nn-clip-sm) }
+.danger-button:hover { background:rgba(204,0,24,.2); box-shadow:0 0 28px rgba(204,0,24,.7),0 0 70px rgba(204,0,24,.2); color:#fff; animation:nn-flicker .4s infinite }
+
+.solid-button { background:var(--nn-neon-primary); color:var(--nn-void); border-color:var(--nn-neon-primary); font-weight:900 }
+.solid-button:hover { background:#fff; box-shadow:var(--nn-box-primary); letter-spacing:.22em }
+
+.ritual-button {
+  background:transparent; color:var(--nn-neon-warn); border:1px solid rgba(255,215,0,.3);
+  font-family:var(--nn-font-ritual); font-size:.8rem; letter-spacing:.12em; text-transform:none; padding:.65em 1.8em;
+}
+.ritual-button::before,.ritual-button::after { content:'✦'; position:absolute; top:50%; transform:translateY(-50%); color:var(--nn-neon-warn); opacity:.6; font-size:.6rem; transition:opacity .2s }
+.ritual-button::before { left:.7rem } .ritual-button::after { right:.7rem }
+.ritual-button:hover { box-shadow:var(--nn-glow-warn); border-color:var(--nn-neon-warn); color:#fff }
+.ritual-button:hover::before,.ritual-button:hover::after { opacity:1 }
+
+.ghoul-button { background:rgba(157,0,255,.08); color:var(--nn-neon-purple); border-color:rgba(157,0,255,.4); font-family:var(--nn-font-jp); font-size:.8rem; letter-spacing:.08em; clip-path:var(--nn-clip-sm) }
+.ghoul-button:hover { background:rgba(157,0,255,.18); box-shadow:var(--nn-glow-purple); color:#fff; animation:nn-corrupt .5s infinite }
+
+.void-button { background:transparent; color:var(--nn-text-ghost); border:1px dashed rgba(255,255,255,.08); clip-path:var(--nn-clip-sm) }
+.void-button:hover { color:var(--nn-neon-accent); border-color:rgba(255,45,120,.3) }
+
+.icon-button { padding:.6em; width:2.6rem; height:2.6rem; background:transparent; border:1px solid var(--nn-border); color:var(--nn-text-dim); transition:all .2s }
+.icon-button:hover { border-color:var(--nn-neon-primary); color:var(--nn-neon-primary); box-shadow:var(--nn-box-primary) }
+.icon-button-sm { width:2rem; height:2rem; font-size:.8rem }
+
+/* ─────────────────────────────────────────────────
+   [7] CARDS
+   ─────────────────────────────────────────────────
+   .nn-card  (base)
+   Variants: cyber-card · hologram-card · ghost-card ·
+             warning-card · ritual-card · shrine-card
+   ───────────────────────────────────────────────── */
+.nn-card { position:relative; padding:1.75rem; border:1px solid var(--nn-border); background:var(--nn-panel); overflow:hidden; transition:all .3s ease }
+.nn-card-header { padding-bottom:1rem; margin-bottom:1rem; border-bottom:1px solid var(--nn-border-dim) }
+.nn-card-footer { padding-top:1rem; margin-top:1rem; border-top:1px solid var(--nn-border-dim) }
+
+.cyber-card { clip-path:var(--nn-clip-corner); background:linear-gradient(135deg,var(--nn-panel) 0%,var(--nn-surface) 100%) }
+.cyber-card::before { content:''; position:absolute; top:0; right:0; width:22px; height:22px; border-top:1px solid var(--nn-neon-primary); border-right:1px solid var(--nn-neon-primary); box-shadow:var(--nn-glow-primary); transition:all .3s }
+.cyber-card:hover { border-color:var(--nn-border-hot); box-shadow:var(--nn-box-primary); transform:translateY(-3px) }
+.cyber-card:hover::before { width:32px; height:32px }
+
+.hologram-card { clip-path:var(--nn-clip-both) }
+
+.ghost-card { background:rgba(10,21,32,.3); border:1px dashed var(--nn-border-dim) }
+.ghost-card:hover { border-color:var(--nn-border); background:var(--nn-glass) }
+
+.warning-card { border-color:var(--nn-neon-danger); box-shadow:var(--nn-box-danger); background:linear-gradient(135deg,rgba(204,0,24,.06) 0%,var(--nn-panel) 40%) }
+
+.ritual-card { border-color:rgba(255,215,0,.2); background:linear-gradient(135deg,rgba(255,215,0,.03) 0%,var(--nn-panel) 50%) }
+.ritual-card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--nn-neon-warn),transparent); opacity:.5 }
+
+.shrine-card {
+  border-color:rgba(255,215,0,.15); background:linear-gradient(180deg,rgba(255,215,0,.03) 0%,var(--nn-panel) 60%);
+  clip-path:var(--nn-clip-corner);
+}
+.shrine-card::before { content:''; position:absolute; top:0; right:0; width:22px; height:22px; border-top:1px solid var(--nn-neon-warn); border-right:1px solid var(--nn-neon-warn); box-shadow:var(--nn-glow-warn) }
+.shrine-card::after { content:'⛩'; position:absolute; bottom:.75rem; right:.85rem; font-size:1.1rem; opacity:.15 }
+
+/* ─────────────────────────────────────────────────
+   [8] PANELS
+   ───────────────────────────────────────────────── */
+/* Data Terminal */
+.data-terminal { background:var(--nn-abyss); border:1px solid var(--nn-neon-primary); box-shadow:var(--nn-box-primary); font-family:var(--nn-font-mono); overflow:hidden }
+.terminal-bar  { padding:.5rem .85rem; background:rgba(0,234,255,.07); border-bottom:1px solid var(--nn-border); display:flex; align-items:center; gap:.5rem }
+.terminal-dot  { width:8px; height:8px; border-radius:50%; display:inline-block }
+.terminal-body { padding:1rem 1.25rem; font-size:.78rem; line-height:1.8; color:var(--nn-neon-primary) }
+.terminal-cursor::after { content:'█'; animation:nn-flicker .8s infinite; color:var(--nn-neon-primary) }
+.terminal-prompt { display:block }
+.terminal-prompt::before { content:'> '; color:var(--nn-neon-accent) }
+.terminal-ok::before { content:'✔ '; color:var(--nn-neon-safe) }
+.terminal-warn::before { content:'⚠ '; color:var(--nn-neon-warn) }
+.terminal-err::before { content:'✖ '; color:var(--nn-neon-danger) }
+
+/* Glitch window */
+.glitch-window { border:1px solid var(--nn-neon-danger); background:linear-gradient(135deg,rgba(204,0,24,.04) 0%,var(--nn-abyss) 100%); box-shadow:var(--nn-box-danger) }
+.window-bar { padding:.5rem .85rem; display:flex; align-items:center; justify-content:space-between }
+.glitch-window .window-bar { background:rgba(204,0,24,.1); border-bottom:1px solid rgba(204,0,24,.3) }
+
+/* Shrine panel */
+.shrine-panel { border:1px solid rgba(255,215,0,.2); background:linear-gradient(180deg,rgba(255,215,0,.03),var(--nn-panel)); position:relative; overflow:hidden }
+.shrine-panel::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%,rgba(255,215,0,.05) 0%,transparent 70%); pointer-events:none }
+
+/* ─────────────────────────────────────────────────
+   [9] NAVIGATION
+   ───────────────────────────────────────────────── */
+.district-navbar {
+  position:sticky; top:0; z-index:1000;
+  background:rgba(2,4,8,.94); border-bottom:1px solid var(--nn-border);
+  backdrop-filter:blur(14px); padding:0 2.5rem; height:58px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.district-navbar::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--nn-neon-primary) 30%,var(--nn-neon-accent) 70%,transparent); box-shadow:var(--nn-glow-primary); opacity:.5 }
+.navbar-logo { font-family:var(--nn-font-display); font-size:.88rem; font-weight:900; letter-spacing:.15em; color:var(--nn-neon-primary); text-shadow:var(--nn-glow-primary); text-decoration:none }
+.navbar-links { display:flex; align-items:center; gap:.2rem; list-style:none }
+.navbar-links a { font-family:var(--nn-font-mono); font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--nn-text-dim); text-decoration:none; padding:.38rem .85rem; border:1px solid transparent; transition:all .2s }
+.navbar-links a:hover,.navbar-links a.active { color:var(--nn-neon-primary); border-color:var(--nn-border); box-shadow:var(--nn-box-primary); background:var(--nn-glass-light) }
+
+/* Sidebar nav */
+.nn-sidenav { display:flex; flex-direction:column; gap:0; border:1px solid var(--nn-border-dim) }
+.nn-sidenav a { font-family:var(--nn-font-mono); font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--nn-text-dim); text-decoration:none; padding:.7rem 1.1rem; border-bottom:1px solid var(--nn-border-dim); transition:all .2s; display:flex; justify-content:space-between; align-items:center }
+.nn-sidenav a:last-child { border-bottom:none }
+.nn-sidenav a:hover { color:var(--nn-neon-primary); background:var(--nn-glass-light); padding-left:1.4rem }
+.nn-sidenav a.active { color:var(--nn-neon-primary); border-left:2px solid var(--nn-neon-primary); box-shadow:inset 3px 0 0 var(--nn-neon-primary) }
+
+/* Breadcrumb */
+.nn-breadcrumb { display:flex; align-items:center; gap:.4rem; font-family:var(--nn-font-mono); font-size:.65rem; letter-spacing:.1em; text-transform:uppercase }
+.nn-breadcrumb a { color:var(--nn-text-dim); text-decoration:none; transition:color .2s }
+.nn-breadcrumb a:hover { color:var(--nn-neon-primary) }
+.nn-breadcrumb span { color:var(--nn-text-ghost) }
+.nn-breadcrumb .bc-active { color:var(--nn-neon-primary) }
+
+/* ─────────────────────────────────────────────────
+   [10] BADGES & TAGS
+   ───────────────────────────────────────────────── */
+.nn-badge { display:inline-flex; align-items:center; gap:.3rem; padding:.18em .7em; font-family:var(--nn-font-mono); font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; border:1px solid; white-space:nowrap }
+.badge-primary { color:var(--nn-neon-primary); border-color:var(--nn-border);           background:var(--nn-glass-light) }
+.badge-accent  { color:var(--nn-neon-accent);  border-color:rgba(255,45,120,.3);        background:rgba(255,45,120,.06) }
+.badge-danger  { color:var(--nn-neon-danger);  border-color:rgba(204,0,24,.4);          background:rgba(204,0,24,.07) }
+.badge-warn    { color:var(--nn-neon-warn);    border-color:rgba(255,215,0,.3);         background:rgba(255,215,0,.05) }
+.badge-safe    { color:var(--nn-neon-safe);    border-color:rgba(0,255,136,.3);         background:rgba(0,255,136,.05) }
+.badge-ghost   { color:var(--nn-text-dim);     border-color:var(--nn-border-dim);       background:transparent }
+.badge-purple  { color:var(--nn-neon-purple);  border-color:rgba(157,0,255,.3);         background:rgba(157,0,255,.06) }
+.badge-solid   { background:var(--nn-neon-primary); color:var(--nn-void); border-color:var(--nn-neon-primary) }
+
+.badge-dot::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; box-shadow:0 0 5px currentColor; animation:nn-flicker-mild 3s infinite }
+.badge-jp { font-family:var(--nn-font-jp); font-size:.75rem; letter-spacing:.08em; text-transform:none }
+
+/* ─────────────────────────────────────────────────
+   [11] BANNERS
+   ───────────────────────────────────────────────── */
+.warning-banner { padding:.75rem 1.25rem; border:1px solid; display:flex; align-items:center; gap:.85rem; font-family:var(--nn-font-mono); font-size:.78rem; letter-spacing:.06em; position:relative; overflow:hidden }
+.warning-banner::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:currentColor; box-shadow:0 0 8px currentColor }
+.banner-icon { font-size:1rem; flex-shrink:0 }
+.banner-primary { color:var(--nn-neon-primary); border-color:var(--nn-border);           background:var(--nn-glass-light) }
+.banner-danger  { color:var(--nn-neon-danger);  border-color:rgba(204,0,24,.3);          background:rgba(204,0,24,.06); animation:nn-flicker 6s infinite }
+.banner-warn    { color:var(--nn-neon-warn);    border-color:rgba(255,215,0,.25);        background:rgba(255,215,0,.04) }
+.banner-safe    { color:var(--nn-neon-safe);    border-color:rgba(0,255,136,.25);        background:rgba(0,255,136,.04) }
+.banner-ghost   { color:var(--nn-text-dim);     border-color:var(--nn-border-dim);       background:transparent }
+
+/* ─────────────────────────────────────────────────
+   [12] KANJI SIGNS & STREET UI
+   ───────────────────────────────────────────────── */
+.kanji-sign { display:inline-flex; flex-direction:column; align-items:center; text-align:center; padding:.5rem; border:1px solid var(--nn-border); background:var(--nn-panel) }
+.kanji-sign .kanji-main { font-family:var(--nn-font-jp); font-weight:900; font-size:2.5rem; color:var(--nn-neon-primary); text-shadow:var(--nn-glow-primary); line-height:1 }
+.kanji-sign .kanji-sub  { font-family:var(--nn-font-mono); font-size:.58rem; letter-spacing:.2em; text-transform:uppercase; color:var(--nn-text-dim); margin-top:.3rem }
+
+.street-sign { display:inline-block; padding:.4rem 1rem; background:var(--nn-neon-danger); color:#fff; font-family:var(--nn-font-jp); font-weight:900; font-size:.85rem; letter-spacing:.05em; box-shadow:var(--nn-box-danger); clip-path:var(--nn-clip-sm) }
+
+/* Vertical text */
+.vtext-jp { writing-mode:vertical-rl; text-orientation:mixed; font-family:var(--nn-font-jp); letter-spacing:.15em }
+
+/* District station sign */
+.station-sign {
+  display:inline-flex; align-items:stretch; border:2px solid var(--nn-neon-primary); box-shadow:var(--nn-box-primary); overflow:hidden;
+}
+.station-sign .station-line { background:var(--nn-neon-primary); color:var(--nn-void); padding:.3rem .55rem; font-family:var(--nn-font-display); font-size:.75rem; font-weight:900; display:flex; align-items:center }
+.station-sign .station-name { padding:.3rem .9rem; font-family:var(--nn-font-jp); font-weight:700; font-size:.9rem; color:var(--nn-neon-primary); text-shadow:var(--nn-glow-primary); display:flex; align-items:center }
+.station-sign .station-jp   { padding:.3rem .7rem; font-family:var(--nn-font-jp); font-size:.7rem; color:var(--nn-text-dim); border-left:1px solid var(--nn-border); display:flex; align-items:center }
+
+/* ─────────────────────────────────────────────────
+   [13] PROGRESS & DATA
+   ───────────────────────────────────────────────── */
+.nn-progress { height:4px; background:var(--nn-surface); border:1px solid var(--nn-border-dim); overflow:hidden; position:relative }
+.nn-progress-lg { height:8px }
+.nn-progress-fill { height:100%; background:var(--nn-neon-primary); box-shadow:var(--nn-glow-primary); transition:width .5s ease; position:relative }
+.nn-progress-fill::after { content:''; position:absolute; right:0; top:0; bottom:0; width:20px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.5)); animation:nn-flicker-mild 2s infinite }
+.progress-accent .nn-progress-fill { background:var(--nn-neon-accent); box-shadow:var(--nn-glow-accent) }
+.progress-danger .nn-progress-fill { background:var(--nn-neon-danger); box-shadow:var(--nn-glow-danger); animation:nn-flicker 3s infinite }
+.progress-warn   .nn-progress-fill { background:var(--nn-neon-warn);   box-shadow:var(--nn-glow-warn) }
+.progress-safe   .nn-progress-fill { background:var(--nn-neon-safe);   box-shadow:var(--nn-glow-safe) }
+
+.nn-progress-label { display:flex; justify-content:space-between; align-items:center; margin-bottom:.35rem; font-family:var(--nn-font-mono); font-size:.65rem; letter-spacing:.1em; text-transform:uppercase; color:var(--nn-text-dim) }
+.nn-progress-label span:last-child { color:var(--nn-neon-primary) }
+
+.nn-stat { display:flex; flex-direction:column; gap:.2rem }
+.nn-stat-value { font-family:var(--nn-font-display); font-size:clamp(1.8rem,3vw,2.5rem); font-weight:900; color:var(--nn-neon-primary); text-shadow:var(--nn-glow-primary); line-height:1 }
+.nn-stat-label { font-family:var(--nn-font-mono); font-size:.65rem; letter-spacing:.14em; text-transform:uppercase; color:var(--nn-text-dim) }
+.nn-stat-change { font-family:var(--nn-font-mono); font-size:.7rem; margin-top:.15rem }
+.stat-up   { color:var(--nn-neon-safe) }
+.stat-down { color:var(--nn-neon-danger) }
+
+/* ─────────────────────────────────────────────────
+   [14] FORMS
+   ───────────────────────────────────────────────── */
+.nn-input { width:100%; background:var(--nn-abyss); border:1px solid var(--nn-border); color:var(--nn-text-primary); font-family:var(--nn-font-mono); font-size:.82rem; padding:.65em 1em; outline:none; cursor:crosshair; transition:all .2s; clip-path:var(--nn-clip-sm) }
+.nn-input::placeholder { color:var(--nn-text-ghost) }
+.nn-input:focus { border-color:var(--nn-neon-primary); box-shadow:var(--nn-box-primary); background:rgba(0,234,255,.02); color:var(--nn-text-bright) }
+.nn-input.danger { border-color:var(--nn-neon-danger); box-shadow:var(--nn-box-danger) }
+.nn-input-label { display:block; font-family:var(--nn-font-mono); font-size:.65rem; letter-spacing:.14em; text-transform:uppercase; color:var(--nn-text-dim); margin-bottom:.4rem }
+.nn-input-group { display:flex; flex-direction:column; gap:.3rem; position:relative }
+.nn-input-hint  { font-family:var(--nn-font-mono); font-size:.62rem; color:var(--nn-text-ghost); margin-top:.25rem }
+.nn-input-error { font-family:var(--nn-font-mono); font-size:.62rem; color:var(--nn-neon-danger); margin-top:.25rem }
+
+.nn-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6' fill='none' stroke='%2300eaff' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 1em center; padding-right:2.5em }
+.nn-textarea { resize:vertical; min-height:90px; font-family:var(--nn-font-mono) }
+
+.nn-checkbox-group { display:flex; align-items:center; gap:.6rem; cursor:crosshair }
+.nn-checkbox { width:14px; height:14px; accent-color:var(--nn-neon-primary); cursor:crosshair }
+.nn-radio    { width:14px; height:14px; accent-color:var(--nn-neon-primary); cursor:crosshair }
+
+/* Search input */
+.nn-search { position:relative }
+.nn-search .nn-input { padding-left:2.2rem }
+.nn-search::before { content:'⌕'; position:absolute; left:.75rem; top:50%; transform:translateY(-50%); color:var(--nn-text-dim); font-size:.9rem; z-index:1; pointer-events:none }
+
+/* Range slider */
+input[type="range"] { cursor:crosshair; accent-color:var(--nn-neon-primary) }
+
+/* ─────────────────────────────────────────────────
+   [15] TABS
+   ───────────────────────────────────────────────── */
+.nn-tabs { display:flex; border-bottom:1px solid var(--nn-border-dim); gap:0 }
+.nn-tab  { padding:.65rem 1.25rem; font-family:var(--nn-font-mono); font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--nn-text-dim); border:1px solid transparent; border-bottom:none; cursor:crosshair; transition:all .2s; background:transparent; margin-bottom:-1px }
+.nn-tab:hover { color:var(--nn-neon-primary) }
+.nn-tab.active { color:var(--nn-neon-primary); border-color:var(--nn-border); background:var(--nn-panel); box-shadow:0 0 12px rgba(0,234,255,.15) }
+.nn-tab-content { display:none; padding:1.5rem 0 }
+.nn-tab-content.active { display:block }
+
+/* ─────────────────────────────────────────────────
+   [16] ACCORDION
+   ───────────────────────────────────────────────── */
+.nn-accordion { border:1px solid var(--nn-border-dim); overflow:hidden }
+.nn-accordion-item { border-bottom:1px solid var(--nn-border-dim) }
+.nn-accordion-item:last-child { border-bottom:none }
+.nn-accordion-trigger { width:100%; padding:1rem 1.25rem; background:transparent; border:none; color:var(--nn-text-primary); font-family:var(--nn-font-mono); font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; text-align:left; cursor:crosshair; display:flex; justify-content:space-between; align-items:center; transition:all .2s }
+.nn-accordion-trigger:hover { color:var(--nn-neon-primary); background:var(--nn-glass-light) }
+.nn-accordion-trigger.open { color:var(--nn-neon-primary); box-shadow:inset 3px 0 0 var(--nn-neon-primary) }
+.nn-accordion-trigger .acc-icon { transition:transform .3s; font-size:.8rem; color:var(--nn-neon-primary) }
+.nn-accordion-trigger.open .acc-icon { transform:rotate(45deg) }
+.nn-accordion-body { display:none; padding:1rem 1.25rem; font-size:.82rem; color:var(--nn-text-dim); line-height:1.8; border-top:1px solid var(--nn-border-dim) }
+.nn-accordion-body.open { display:block }
+
+/* ─────────────────────────────────────────────────
+   [17] TIMELINE
+   ───────────────────────────────────────────────── */
+.nn-timeline { display:flex; flex-direction:column; position:relative; padding-left:2rem }
+.nn-timeline::before { content:''; position:absolute; left:6px; top:0; bottom:0; width:1px; background:linear-gradient(180deg,var(--nn-neon-primary),transparent); opacity:.3 }
+.nn-timeline-item { position:relative; padding-bottom:1.75rem }
+.nn-timeline-item::before { content:''; position:absolute; left:-26px; top:6px; width:10px; height:10px; border:1px solid var(--nn-neon-primary); box-shadow:var(--nn-glow-primary); background:var(--nn-void) }
+.nn-timeline-item.t-danger::before { border-color:var(--nn-neon-danger); box-shadow:var(--nn-glow-danger); animation:nn-flicker 3s infinite }
+.nn-timeline-item.t-warn::before   { border-color:var(--nn-neon-warn);   box-shadow:var(--nn-glow-warn) }
+.nn-timeline-time  { font-family:var(--nn-font-mono); font-size:.62rem; letter-spacing:.12em; color:var(--nn-text-ghost); text-transform:uppercase; margin-bottom:.3rem }
+.nn-timeline-title { font-family:var(--nn-font-mono); font-size:.78rem; color:var(--nn-text-bright); margin-bottom:.3rem }
+.nn-timeline-desc  { font-size:.8rem; color:var(--nn-text-dim); line-height:1.7 }
+
+/* ─────────────────────────────────────────────────
+   [18] TABLE
+   ───────────────────────────────────────────────── */
+.nn-table { width:100%; border-collapse:collapse; font-family:var(--nn-font-mono); font-size:.75rem }
+.nn-table th { padding:.6rem 1rem; text-align:left; font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--nn-neon-primary); border-bottom:1px solid var(--nn-border); background:rgba(0,234,255,.04) }
+.nn-table td { padding:.7rem 1rem; border-bottom:1px solid var(--nn-border-dim); color:var(--nn-text-dim); vertical-align:middle; transition:background .15s }
+.nn-table tr:hover td { background:var(--nn-glass-light); color:var(--nn-text-primary) }
+.td-danger { color:var(--nn-neon-danger) }
+.td-warn   { color:var(--nn-neon-warn) }
+.td-safe   { color:var(--nn-neon-safe) }
+.td-dim    { color:var(--nn-text-ghost); font-style:italic }
+
+/* ─────────────────────────────────────────────────
+   [19] AVATAR & PROFILE CARD
+   ───────────────────────────────────────────────── */
+.nn-avatar { width:48px; height:48px; border:1px solid var(--nn-neon-primary); box-shadow:var(--nn-box-primary); overflow:hidden; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--nn-surface); font-family:var(--nn-font-display); font-size:1.2rem; color:var(--nn-neon-primary); clip-path:var(--nn-clip-corner) }
+.nn-avatar-xl { width:80px; height:80px; font-size:2rem }
+.nn-avatar-lg { width:64px; height:64px; font-size:1.6rem }
+.nn-avatar-sm { width:36px; height:36px; font-size:.9rem }
+.nn-avatar-xs { width:26px; height:26px; font-size:.65rem }
+.nn-avatar-danger { border-color:var(--nn-neon-danger); box-shadow:var(--nn-box-danger); color:var(--nn-neon-danger) }
+.nn-avatar-warn   { border-color:var(--nn-neon-warn);   box-shadow:var(--nn-box-warn);   color:var(--nn-neon-warn) }
+.nn-avatar-purple { border-color:var(--nn-neon-purple); box-shadow:var(--nn-box-purple); color:var(--nn-neon-purple) }
+
+.profile-card { display:flex; gap:1.25rem; align-items:flex-start }
+.profile-card .profile-info { flex:1 }
+.profile-card .profile-name { font-family:var(--nn-font-display); font-size:.9rem; color:var(--nn-text-bright); margin-bottom:.3rem }
+.profile-card .profile-role { font-family:var(--nn-font-mono); font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; color:var(--nn-text-dim) }
+
+/* ─────────────────────────────────────────────────
+   [20] MODALS & DIALOGS
+   ───────────────────────────────────────────────── */
+.nn-modal-overlay { position:fixed; inset:0; background:rgba(2,4,8,.9); backdrop-filter:blur(8px); z-index:5000; display:none; align-items:center; justify-content:center }
+.nn-modal-overlay.open { display:flex }
+@keyframes nn-modal-in { from{opacity:0;transform:scale(.96) translateY(-10px)} to{opacity:1;transform:none} }
+.nn-modal { background:var(--nn-panel); border:1px solid var(--nn-neon-primary); box-shadow:var(--nn-box-primary),0 0 100px rgba(0,234,255,.06); clip-path:var(--nn-clip-corner); max-width:560px; width:90%; position:relative; animation:nn-modal-in .3s ease }
+.nn-modal-header { padding:1.25rem 1.5rem; border-bottom:1px solid var(--nn-border-dim); display:flex; justify-content:space-between; align-items:center }
+.nn-modal-body   { padding:1.5rem }
+.nn-modal-footer { padding:1rem 1.5rem; border-top:1px solid var(--nn-border-dim); display:flex; justify-content:flex-end; gap:.75rem }
+.nn-modal-close  { background:transparent; border:none; color:var(--nn-text-dim); font-size:1.2rem; cursor:crosshair; transition:color .2s; line-height:1 }
+.nn-modal-close:hover { color:var(--nn-neon-danger) }
+
+.ritual-dialog { background:var(--nn-panel); border:1px solid rgba(255,215,0,.3); box-shadow:var(--nn-box-warn),0 0 100px rgba(255,215,0,.05); max-width:500px; width:90%; position:relative; font-family:var(--nn-font-jp-serif) }
+.ritual-dialog::before { content:''; position:absolute; inset:6px; border:1px solid rgba(255,215,0,.1); pointer-events:none }
+
+/* ─────────────────────────────────────────────────
+   [21] TOAST NOTIFICATIONS
+   ───────────────────────────────────────────────── */
+@keyframes nn-toast-in { from{transform:translateX(120%);opacity:0} to{transform:translateX(0);opacity:1} }
+.nn-toast-stack { position:fixed; bottom:2rem; right:2rem; display:flex; flex-direction:column-reverse; gap:.75rem; z-index:9000 }
+.nn-toast { background:var(--nn-panel); border:1px solid var(--nn-border); box-shadow:var(--nn-box-primary); padding:1rem 1.25rem; min-width:280px; max-width:380px; font-family:var(--nn-font-mono); font-size:.75rem; display:flex; gap:.75rem; align-items:flex-start; animation:nn-toast-in .3s ease; clip-path:var(--nn-clip-sm); position:relative }
+.nn-toast::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--nn-neon-primary) }
+.nn-toast.toast-danger::before { background:var(--nn-neon-danger) }
+.nn-toast.toast-warn::before   { background:var(--nn-neon-warn) }
+.nn-toast.toast-safe::before   { background:var(--nn-neon-safe) }
+.nn-toast-icon  { font-size:1rem; flex-shrink:0 }
+.nn-toast-body  { flex:1 }
+.nn-toast-title { color:var(--nn-text-bright); margin-bottom:.2rem; font-weight:600 }
+.nn-toast-msg   { color:var(--nn-text-dim); font-size:.68rem }
+
+/* ─────────────────────────────────────────────────
+   [22] TOOLTIP
+   ───────────────────────────────────────────────── */
+[data-tooltip] { position:relative }
+[data-tooltip]::after { content:attr(data-tooltip); position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); background:var(--nn-panel); border:1px solid var(--nn-border); box-shadow:var(--nn-box-primary); color:var(--nn-text-bright); font-family:var(--nn-font-mono); font-size:.65rem; letter-spacing:.1em; padding:.35rem .75rem; white-space:nowrap; pointer-events:none; opacity:0; transition:opacity .2s; z-index:100 }
+[data-tooltip]:hover::after { opacity:1 }
+
+/* ─────────────────────────────────────────────────
+   [23] LOADERS & SPINNERS
+   ───────────────────────────────────────────────── */
+@keyframes nn-spin    { to{ transform:rotate(360deg) } }
+@keyframes nn-load-slide { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.nn-spinner    { width:36px; height:36px; border:2px solid var(--nn-border-dim); border-top-color:var(--nn-neon-primary); border-radius:50%; animation:nn-spin .8s linear infinite; box-shadow:0 0 10px rgba(0,234,255,.3) }
+.nn-spinner-sm { width:22px; height:22px; border-width:1.5px }
+.nn-spinner-xs { width:16px; height:16px; border-width:1px }
+
+.nn-loading-bar { height:2px; background:linear-gradient(90deg,transparent,var(--nn-neon-primary),var(--nn-neon-accent),transparent); background-size:200% 100%; animation:nn-load-slide 1.5s linear infinite }
+
+.nn-skeleton { background:linear-gradient(90deg,var(--nn-surface) 25%,var(--nn-panel) 50%,var(--nn-surface) 75%); background-size:200% 100%; animation:nn-load-slide 1.5s ease infinite; border-radius:0 }
+
+/* ─────────────────────────────────────────────────
+   [24] CITY BACKDROP SYSTEM
+   ─────────────────────────────────────────────────
+
+   Usage:
+     <!-- always renders -->
+     <div class="city-backdrop">
+       <canvas id="my-city"></canvas>
+     </div>
+
+     <!-- toggle via JS or user action -->
+     <div class="city-backdrop city-backdrop--off">  ← hidden
+     <div class="city-backdrop city-backdrop--on">   ← visible (default when class missing)
+
+     <!-- Full-page fixed background -->
+     <canvas id="city-hero-canvas" class="city-hero-bg"></canvas>
+
+   JS:  toggleCityBackdrop('my-id')
+        setCityBackdropVisible('my-id', true/false)
+   ───────────────────────────────────────────────── */
+
+/* Container */
+.city-backdrop {
+  position:relative; overflow:hidden;
+  background:var(--city-sky, #000810);
+  transition:opacity .6s ease, height .5s ease;
+}
+.city-backdrop canvas { position:absolute; bottom:0; left:0; width:100%; pointer-events:none }
+
+/* Visibility toggle via class */
+.city-backdrop--off {
+  opacity:0; height:0 !important; overflow:hidden; pointer-events:none;
+}
+.city-backdrop--on {
+  opacity:1;
+}
+
+/* Full-page hero canvas */
+.city-hero-bg {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  pointer-events:none; z-index:0;
+  transition:opacity .6s;
+}
+.city-hero-bg--off { opacity:0 }
+.city-hero-bg--on  { opacity:0.82 }
+
+/* Content inside city backdrop sits above canvas */
+.city-backdrop .city-content { position:relative; z-index:5 }
+
+/* Label overlay */
+.city-backdrop .city-label {
+  position:absolute; bottom:1.25rem; left:1.5rem; z-index:6;
+}
+.city-backdrop .city-badge {
+  position:absolute; top:.85rem; right:.85rem; z-index:6;
+}
+
+/* Fog gradient over city */
+.city-fog::after {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:4;
+  background:linear-gradient(0deg, var(--nn-void) 0%, transparent 35%, transparent 70%, var(--nn-void) 100%);
+}
+
+/* ─────────────────────────────────────────────────
+   [25] ATMOSPHERIC LAYER
+   ───────────────────────────────────────────────── */
+/* Fixed rain canvas */
+#rain-canvas          { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:2; opacity:.55; transition:opacity .6s }
+#infestation-canvas   { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:2; opacity:0; transition:opacity 1s }
+
+/* Page-level city grid */
+.city-bg { position:fixed; inset:0; background-image:linear-gradient(rgba(0,234,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,234,255,.022) 1px,transparent 1px); background-size:65px 65px; pointer-events:none; z-index:0 }
+
+/* Vignette */
+.fog-vignette::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse at center,transparent 25%,rgba(2,4,8,.45) 65%,rgba(2,4,8,.92) 100%); pointer-events:none; z-index:1 }
+
+/* Corner decorations */
+.nn-corner-tl::before,.nn-corner-br::after { content:''; position:absolute; width:16px; height:16px; border-color:var(--nn-neon-primary); border-style:solid; box-shadow:0 0 8px var(--nn-neon-primary); opacity:.7 }
+.nn-corner-tl::before { top:8px; left:8px; border-width:1px 0 0 1px }
+.nn-corner-br::after  { bottom:8px; right:8px; border-width:0 1px 1px 0 }
+
+/* ─────────────────────────────────────────────────
+   [26] SHOWCASE PAGE STYLES
+   ───────────────────────────────────────────────── */
+.section-eyebrow { font-family:var(--nn-font-mono); font-size:.65rem; letter-spacing:.3em; text-transform:uppercase; color:var(--nn-neon-primary); display:flex; align-items:center; gap:.75rem; margin-bottom:.75rem }
+.section-eyebrow::before { content:''; width:2rem; height:1px; background:var(--nn-neon-primary); box-shadow:var(--nn-glow-primary) }
+
+.district-switcher { display:flex; gap:.5rem; flex-wrap:wrap }
+.district-btn { padding:.35rem 1rem; background:transparent; border:1px solid var(--nn-border-dim); color:var(--nn-text-dim); font-family:var(--nn-font-mono); font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; cursor:crosshair; transition:all .2s }
+.district-btn:hover,.district-btn.active { border-color:var(--nn-neon-primary); color:var(--nn-neon-primary); box-shadow:var(--nn-box-primary) }
+
+.effect-demo { display:flex; align-items:center; justify-content:center; min-height:130px; padding:2rem; background:var(--nn-abyss); border:1px solid var(--nn-border-dim); position:relative; overflow:hidden }
+.effect-label { position:absolute; bottom:.5rem; right:.75rem; font-family:var(--nn-font-mono); font-size:.58rem; letter-spacing:.15em; text-transform:uppercase; color:var(--nn-text-ghost) }
+
+.labeled-sep { display:flex; align-items:center; gap:1rem; margin:3rem 0 }
+.labeled-sep::before,.labeled-sep::after { content:''; flex:1; height:1px; background:var(--nn-border-dim) }
+.labeled-sep span { font-family:var(--nn-font-mono); font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; color:var(--nn-text-ghost); white-space:nowrap }
+
+.code-block { background:var(--nn-abyss); border:1px solid var(--nn-border); padding:1.25rem 1.5rem; font-family:var(--nn-font-mono); font-size:.73rem; line-height:1.85; color:var(--nn-text-primary); overflow-x:auto; position:relative }
+.code-block .cb-label { position:absolute; top:.5rem; right:.75rem; font-size:.58rem; letter-spacing:.15em; text-transform:uppercase; color:var(--nn-text-ghost) }
+.code-comment{color:var(--nn-text-ghost)} .code-key{color:var(--nn-neon-accent)} .code-val{color:var(--nn-neon-primary)} .code-cls{color:var(--nn-neon-warn)} .code-str{color:var(--nn-neon-safe)}
+
+.nn-palette { display:flex; height:46px; border:1px solid var(--nn-border-dim); overflow:hidden }
+.palette-swatch { flex:1; transition:flex .3s }
+.palette-swatch:hover { flex:2 }
+
+.nn-footer { border-top:1px solid var(--nn-border); padding:3rem 0; text-align:center; position:relative; z-index:3 }
+.nn-footer::before { content:''; position:absolute; top:-1px; left:50%; transform:translateX(-50%); width:120px; height:1px; background:var(--nn-neon-primary); box-shadow:var(--nn-glow-primary) }
+
+@media(max-width:768px){
+  .nn-grid-2,.nn-grid-3,.nn-grid-4,.nn-grid-5,.nn-grid-6{grid-template-columns:1fr}
+  .nn-container{padding:0 1.25rem}
+  .navbar-links{display:none}
+}
